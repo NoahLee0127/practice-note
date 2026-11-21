@@ -1,7 +1,7 @@
 # Everyday Practice Note (매일매일 연습일기) — 개발 지침
 
 골프 드라이빙 레인지 연습 루틴 체크 · 시간별 공 배분 · 날짜별 연습일기 웹앱.
-배포: Cloudflare Pages `practice-note.pages.dev` (GitHub `main` 브랜치 → 자동 배포, 다른 브랜치는 미리보기 주소).
+배포: Cloudflare Pages `practice-note-ech.pages.dev` (GitHub `main` 브랜치 → 자동 배포, 다른 브랜치는 미리보기 주소).
 제작자 표시(하단): `Made by 누렁띠 · Dealbada` / `© 2026 누렁띠. All Rights Reserved.` — 삭제·변경 금지.
 
 ## 구조
