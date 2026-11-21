@@ -759,7 +759,12 @@ function renderHistory(){
   ctr.append(edit,copy,remove);article.append(title,fields,details,ctr);list.append(article);
  }
 }
-function csvCell(value){return '"'+String(value??'').replace(/"/g,'""')+'"'}
+// 문자열이 = + - @ (또는 탭·줄바꿈)으로 시작하면 Excel이 수식으로 실행하지 않도록 앞에 '를 붙입니다. 숫자 칸은 그대로 둡니다.
+function csvCell(value){
+ let text=String(value??'');
+ if(typeof value==='string'&&/^[=+\-@\t\r]/.test(text))text="'"+text;
+ return '"'+text.replace(/"/g,'""')+'"';
+}
 function downloadFile(content,filename,mime){const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob);const a=make('a');a.href=url;a.download=filename;a.style.display='none';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),20000)}
 function exportCSV(){
  if(!history.length){toast('내보낼 연습 기록이 없습니다.');return}
@@ -823,22 +828,43 @@ async function saveBackupToLocation(){
   try{downloadFile(d.content,d.filename,d.mime);markBackup();toast('파일 저장 창을 사용할 수 없어 다운로드했습니다.')}catch{toast('백업이 실패했습니다. 다른 브라우저에서 시도하세요.')}
  }
 }
+// 백업 복원 시 외부 파일의 값을 이 앱이 저장하는 필드만 남겨 정리합니다(알 수 없는 필드·비정상 타입 제거).
+// 입력칸에 글자 수 제한이 없으므로, 정상 기록이 잘리지 않도록 메모 상한은 넉넉하게 둡니다.
+const BACKUP_MAX_BYTES=10*1024*1024,BACKUP_MAX_ENTRIES=5000,BACKUP_TEXT_MAX=10000,BACKUP_OBJECT_MAX_CHARS=300000;
+function sanitizeHistoryEntry(e){
+ if(!e||typeof e!=='object'||Array.isArray(e)||typeof e.date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(e.date))return null;
+ const checks={};
+ if(e.checks&&typeof e.checks==='object'&&!Array.isArray(e.checks)){
+  Object.keys(e.checks).slice(0,2000).forEach(k=>{if(k!=='__proto__'&&k.length<=100&&e.checks[k])checks[k]=true});
+ }
+ return {date:e.date,id:cleanString(e.id,100)||uid(),savedAt:cleanString(e.savedAt,40),
+  best:cleanString(e.best,BACKUP_TEXT_MAX),worst:cleanString(e.worst,BACKUP_TEXT_MAX),next:cleanString(e.next,BACKUP_TEXT_MAX),
+  checks,plan:entryPlan(e),shared:entryShared(e),total:entryTotal(e),done:entryDone(e)};
+}
+function sanitizePreferences(p){
+ const minutes=Number(p.minutes);
+ return {minutes:Number.isFinite(minutes)&&minutes>0&&minutes<=1440?minutes:60,
+  pace:['30','45','60','90'].includes(String(p.pace))?p.pace:45,
+  focus:['none','wedge','iron','long','sim'].includes(p.focus)?p.focus:'none'};
+}
 async function importJSON(file){
  if(!file)return;
+ if(file.size>BACKUP_MAX_BYTES){toast('백업 파일이 너무 큽니다(최대 10MB). 올바른 백업 파일인지 확인하세요.');return}
  try{
   const data=JSON.parse(await file.text());
-  if(data.type!=='golf-practice-diary'||!Array.isArray(data.history))throw Error('backup');
-  const incoming=data.history.filter(e=>e&&typeof e==='object'&&typeof e.date==='string');
+  if(!data||data.type!=='golf-practice-diary'||!Array.isArray(data.history))throw Error('backup');
+  const incoming=data.history.slice(0,BACKUP_MAX_ENTRIES).map(sanitizeHistoryEntry).filter(Boolean);
   const hasBase=Array.isArray(data.defaultRoutine);const hasSharedBase=Array.isArray(data.defaultShared);const hasCurrent=data.current&&typeof data.current==='object'&&!Array.isArray(data.current);
   if(!(await askConfirm(`백업 기록 ${incoming.length}건을 가져올까요?\n같은 날짜의 기존 기록은 유지하고 새로운 날짜만 추가합니다.\n${hasBase?'백업의 기본 루틴도 복원합니다.\n':''}${hasCurrent?'작성 중인 오늘 계획과 메모는 백업 내용으로 변경됩니다.\n':''}수정된 스윙 메모와 개인 기본 문구도 복원됩니다.`,{title:'백업 불러오기',okText:'불러오기'})))return;
   const dates=new Set(history.map(e=>e.date));let added=0;const merged=[...history];
-  incoming.forEach(e=>{if(!dates.has(e.date)){merged.push({...e,id:e.id||uid(),plan:entryPlan(e),shared:entryShared(e),total:entryTotal(e),done:entryDone(e)});dates.add(e.date);added++}});
+  incoming.forEach(e=>{if(!dates.has(e.date)){merged.push(e);dates.add(e.date);added++}});
   const incomingBase=hasBase?normalizedPlan(data.defaultRoutine,basePlan):basePlan;
   const incomingBaseShared=hasSharedBase?normalizedShared(data.defaultShared,baseShared):baseShared;
   let incomingCurrent=current;
   if(hasCurrent){const r=data.current;incomingCurrent={checks:r.checks&&typeof r.checks==='object'&&!Array.isArray(r.checks)?{...r.checks}:{},
    plan:normalizedPlan(r.plan,hasBase?incomingBase:builtInPlan),shared:normalizedShared(r.shared,hasSharedBase?incomingBaseShared:builtInShared),date:typeof r.date==='string'?r.date:localDate(),best:cleanString(r.best,500),worst:cleanString(r.worst,500),next:cleanString(r.next,3000)};}
-  const validFeelObj=x=>x&&typeof x==='object'&&!Array.isArray(x);
+  const validFeelObj=x=>x&&typeof x==='object'&&!Array.isArray(x)&&JSON.stringify(x).length<=BACKUP_OBJECT_MAX_CHARS;
+  const newPrefs=validFeelObj(data.plannerPreferences)?sanitizePreferences(data.plannerPreferences):null;
   // 메모는 기존 v4 백업 형식도 지원합니다.
   const newFeels=validFeelObj(data.swingFeel)?data.swingFeel:null;
   const newDefaults=validFeelObj(data.swingDefaults)?data.swingDefaults:null;
@@ -849,7 +875,7 @@ async function importJSON(file){
   if(hasCurrent)writes.push([CURRENT_KEY,incomingCurrent]);
   if(newFeels)writes.push([FEEL_KEY,newFeels]);
   if(newDefaults)writes.push([FEEL_DEFAULT_KEY,newDefaults]);
-  if(validFeelObj(data.plannerPreferences))writes.push([PREF_KEY,data.plannerPreferences]);
+  if(newPrefs)writes.push([PREF_KEY,newPrefs]);
   const serialized=writes.map(([key,value])=>[key,JSON.stringify(value)]);
   const previous=serialized.map(([key])=>[key,localStorage.getItem(key)]);
   try{serialized.forEach(([key,text])=>localStorage.setItem(key,text))}
@@ -859,7 +885,7 @@ async function importJSON(file){
   }
   history=merged;basePlan=incomingBase;baseShared=incomingBaseShared;current=incomingCurrent;
   if(newFeels)feelNotes=newFeels;if(newDefaults)feelUserDefaults=newDefaults;
-  if(validFeelObj(data.plannerPreferences))preferences=data.plannerPreferences;
+  if(newPrefs)preferences=newPrefs;
   feelKinds.forEach(renderFeel);syncForm();renderHistory();restorePlannerPreferences();clearSuggestion();closeEditor();
   toast(`새로운 날짜 ${added}건을 불러왔습니다. (${data.version||'이전'} 버전 호환)`);
  }catch(err){toast('백업 복원에 실패했습니다. 올바른 JSON 파일인지 확인하세요.');console.error('backup import:',err)}

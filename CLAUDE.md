@@ -33,6 +33,10 @@
 
 - JSON 백업 `type: golf-practice-diary`, `version: 6`. **키 이름·백업 형식 변경 시 기존 사용자 데이터 이관/복원 호환 필수.**
 - 복원: 같은 날짜 기존 기록 유지, 새 날짜만 추가. 모든 키를 준비 후 기록, 실패 시 전부 롤백.
+- 복원 입력 정리(v8.1.1~): 파일 10MB·기록 5,000건 상한, 기록 항목은 `sanitizeHistoryEntry`로 알려진 필드만 남김(날짜 `YYYY-MM-DD` 형식 필수, 메모 각 10,000자), 선호 설정은 `sanitizePreferences`. 백업 형식에 필드를 추가하면 이 정리 함수에도 추가할 것(안 하면 복원 때 사라짐).
+- CSV 내보내기: 문자열이 `= + - @`로 시작하면 앞에 `'`를 붙여 수식 실행 방지(`csvCell`).
+- `_headers`(Cloudflare Pages 보안 헤더): iframe 삽입 차단(`X-Frame-Options`, `frame-ancestors`), `nosniff`, `Referrer-Policy: no-referrer`. 앱을 iframe에 넣어 쓸 계획이 생기면 조정.
+- `sw.js`는 정상 응답(`res.ok`)만 오프라인 캐시에 저장.
 - 체크는 항목 ID로 연결. 클럽명으로 식별 금지.
 - 배포 주소(도메인)를 바꾸면 사용자 기록이 따라오지 않음 → 주소 변경 금지.
 
