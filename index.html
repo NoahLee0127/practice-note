@@ -60,6 +60,8 @@
     .check-item input:checked:after{content:"";position:absolute;left:6px;top:2px;width:7px;height:12px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
     .item-name{flex:1;font-size:15px;font-weight:600;line-height:1.45}
     .check-item input:checked+.item-name{color:#74847a;text-decoration:line-through;text-decoration-color:#abbdb0}
+    .edit-fields .limit{display:block;margin-top:3px;font-size:11px;color:#728678;text-align:right}
+    .item-target{display:block;margin-top:2px;font-size:12.5px;font-weight:650;color:#4f7c64;text-decoration:none}
     .balls{flex-shrink:0;color:#789083;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
     .check-item input:focus-visible,.small-btn:focus-visible,.main-btn:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #a5d1ad;outline-offset:2px}
     .notes{padding:0 18px 20px}
@@ -601,9 +603,10 @@ function normalizedPlan(raw,fallback=builtInPlan){
    return {key:sec.key,items:items.filter(it=>it&&typeof it==='object').map(it=>{
     const id=cleanString(it.id,100)||uid();if(found.has(id))throw Error('duplicate');found.add(id);n++;
     const balls=Math.max(0,Math.min(1000,Math.round(Number(it.balls)||0)));
-    if(sec.key==='wedge')return {id,loft:Number(it.loft),distance:Number(it.distance),balls};
-    if(sec.key==='iron')return {id,club:cleanString(it.club,10),goal:cleanString(it.goal,40),balls};
-    if(sec.key==='long')return {id,clubType:['utility','wood','driver'].includes(it.clubType)?it.clubType:'utility',number:cleanString(String(it.number??''),5),loft:cleanString(String(it.loft??''),12),focus:cleanString(it.focus,30),balls};
+    const target=cleanString(it.target,30);
+    if(sec.key==='wedge')return {id,loft:Number(it.loft),distance:Number(it.distance),balls,target};
+    if(sec.key==='iron')return {id,club:cleanString(it.club,10),goal:cleanString(it.goal,40),balls,target};
+    if(sec.key==='long')return {id,clubType:['utility','wood','driver'].includes(it.clubType)?it.clubType:'utility',number:cleanString(String(it.number??''),5),loft:cleanString(String(it.loft??''),12),focus:cleanString(it.focus,30),balls,target};
     return {id,focus:cleanString(it.focus,100),balls};
    })};
   });
@@ -677,8 +680,8 @@ function renderPlan(){
   if(!s.items.length)root.append(make('p','edit-empty','설정된 항목이 없습니다. 위에서 오늘 계획을 편집하세요.'));
   s.items.forEach(item=>{
    const label=make('label','check-item');const cb=make('input');cb.type='checkbox';cb.dataset.checkId=item.id;
-   cb.checked=!!current.checks[item.id];cb.disabled=countBall(item)===0;cb.setAttribute('aria-label',`${planLabel(s.key,item)} ${countBall(item)}구`);
-   const title=make('span','item-name',planLabel(s.key,item));const balls=make('span','balls',countBall(item)+'구');
+   cb.checked=!!current.checks[item.id];cb.disabled=countBall(item)===0;cb.setAttribute('aria-label',`${planLabel(s.key,item)} ${countBall(item)}구${item.target?' 목표 '+item.target:''}`);
+   const title=make('span','item-name',planLabel(s.key,item));if(item.target)title.append(make('span','item-target','목표 · '+item.target));const balls=make('span','balls',countBall(item)+'구');
    label.append(cb,title,balls);if(cb.disabled)label.setAttribute('aria-disabled','true');root.append(label);
   });
  });
@@ -703,7 +706,7 @@ function syncForm(){
 function summarize(entry){
  const plan=entryPlan(entry),done=entryDone(entry),total=entryTotal(entry),pct=total?Math.round(done/total*100):0;
  const parts=['⛳ 매일매일 연습일기',`연습일: ${entry.date||'-'}`,`완료: ${done}/${total}구 (${pct}%)`];
- plan.forEach(s=>{parts.push('\n'+SECTIONS.find(x=>x.key===s.key).title);s.items.forEach(it=>parts.push((entry.checks?.[it.id]?'☑ ':'☐ ')+planLabel(s.key,it)+' / '+it.balls+'구'))});
+ plan.forEach(s=>{parts.push('\n'+SECTIONS.find(x=>x.key===s.key).title);s.items.forEach(it=>parts.push((entry.checks?.[it.id]?'☑ ':'☐ ')+planLabel(s.key,it)+' / '+it.balls+'구'+(it.target?' / 목표 '+it.target:'')))});
  parts.push('\n퍼팅 (시간 별도)');putting.forEach(([id,name])=>parts.push((entry.checks?.[id]?'☑ ':'☐ ')+name));
  parts.push('\n매 샷 공통 체크');entryShared(entry).forEach(({id,text})=>parts.push((entry.checks?.[id]?'☑ ':'☐ ')+text));
  parts.push('\n가장 잘 맞은 클럽: '+(entry.best||'-'),'가장 불안했던 클럽: '+(entry.worst||'-'),'다음 연습 집중사항: '+(entry.next||'-'));
@@ -994,13 +997,22 @@ function showEditorFeedback(message,undo=null){
  toast(message);
 }
 $('undoEditorDelete').addEventListener('click',()=>{if(!undoEdit)return;const fn=undoEdit;clearEditorFeedback();fn();showEditorFeedback('삭제한 항목을 복원했습니다. 저장하면 적용됩니다.');});
+// 목표 수치 자동 따라가기(A안): 항목을 새로 추가할 때 같은 클럽의 앞 항목 값을 채우고, 직접 고치면 그 항목은 따라가기를 멈춤. 이미 있는 항목은 건드리지 않음.
+const autoTarget=new WeakSet();
+const clubKey=(key,it)=>key==='wedge'?'w'+Number(it.loft):key==='iron'?'i'+it.club:key==='long'?'l'+it.clubType+'|'+String(it.number??''):'';
+function inheritTarget(key,items,index,item){
+ const id=clubKey(key,item);
+ for(let j=Math.min(index,items.length)-1;j>=0;j--){const p=items[j];if(clubKey(key,p)===id&&String(p.target||'').trim())return String(p.target)}
+ return '';
+}
 function inputControl(group,index,item,key,label,type='text',options=null,extra={}){
  const field=make('div','field'+(extra.wide?' focus-field':'')),caption=make('label','',label),ctrl=make(options?'select':'input');
  if(options){options.forEach(([value,title])=>{const opt=make('option','',title);opt.value=value;ctrl.append(opt)})}
  else{ctrl.type=type;if(type==='number')ctrl.inputMode='decimal';if(extra.placeholder)ctrl.placeholder=extra.placeholder;if(extra.maxlength)ctrl.maxLength=extra.maxlength;
   if(extra.min!=null)ctrl.min=String(extra.min);if(extra.max!=null)ctrl.max=String(extra.max);if(extra.step!=null)ctrl.step=String(extra.step);}
  ctrl.value=item[key]??'';caption.append(ctrl);field.append(caption);
- ctrl.addEventListener('input',()=>{item[key]=ctrl.value;const count=field.querySelector('.limit');if(count)count.textContent=ctrl.value.length+' / '+(extra.maxlength||30);$('editorBallTotal').textContent=sumPlan(draftPlan)+'구';});
+ ctrl.addEventListener('change',()=>{if(extra.onChange)extra.onChange()});
+ ctrl.addEventListener('input',()=>{item[key]=ctrl.value;if(extra.onInput)extra.onInput();const count=field.querySelector('.limit');if(count)count.textContent=ctrl.value.length+' / '+(extra.maxlength||30);$('editorBallTotal').textContent=sumPlan(draftPlan)+'구';});
  if(extra.maxlength){field.append(make('span','edit-hint limit',String(ctrl.value).length+' / '+extra.maxlength))}
  return field;
 }
@@ -1017,6 +1029,7 @@ function renderEditor(){
    else if(meta.key==='iron')item={id,club:'7',goal:'정타 집중',balls:5};
    else if(meta.key==='long')item={id,clubType:'utility',number:'4',loft:'',focus:'정타 집중',balls:5};
    else item={id,focus:'실전 상황 반복',balls:5};
+   if(meta.key!=='sim'){item.target=inheritTarget(meta.key,group.items,group.items.length,item);autoTarget.add(item)}
    group.items.push(item);renderEditor();showEditorFeedback(`${meta.title} 항목을 추가했습니다. 「수정 내용 저장」을 눌러 적용하세요.`);
   });header.append(add);panel.append(header);
   if(!group.items.length)panel.append(make('p','edit-empty','등록된 항목이 없습니다. 「항목 추가」를 눌러주세요.'));
@@ -1037,14 +1050,17 @@ function renderEditor(){
     });
    });buttons.append(del);top.append(buttons);box.append(top);
    const fields=make('div','edit-fields');
+   let targetField=null;
+   const reinherit=()=>{if(meta.key==='sim'||!autoTarget.has(item))return;const t=inheritTarget(meta.key,group.items,i,item);item.target=t;if(targetField){targetField.querySelector('input').value=t;const l=targetField.querySelector('.limit');if(l)l.textContent=t.length+' / 30'}};
+   const targetControl=placeholder=>{targetField=inputControl(group,i,item,'target','목표 수치 (선택)','text',null,{wide:true,maxlength:30,placeholder,onInput:()=>autoTarget.delete(item)});return targetField};
    if(meta.key==='wedge'){
-    fields.append(inputControl(group,i,item,'loft','로프트 (°)','number',null,{min:0,max:80,step:0.5}),inputControl(group,i,item,'distance','목표 거리 (m)','number',null,{min:0,max:300,step:1}),inputControl(group,i,item,'balls','공 개수','number',null,{min:1,max:1000,step:1}));
+    fields.append(inputControl(group,i,item,'loft','로프트 (°)','number',null,{min:0,max:80,step:0.5,onChange:reinherit}),inputControl(group,i,item,'distance','목표 거리 (m)','number',null,{min:0,max:300,step:1}),inputControl(group,i,item,'balls','공 개수','number',null,{min:1,max:1000,step:1}),targetControl('예: 캐리 ±2m 이내'));
    }else if(meta.key==='iron'){
-    fields.append(inputControl(group,i,item,'club','아이언 종류','text',IRONS.map(x=>[x,/^\d+$/.test(x)?x+'번 아이언':x])),inputControl(group,i,item,'goal','집중 목표','text',GOALS.map(x=>[x,x])),inputControl(group,i,item,'balls','공 개수','number',null,{min:1,max:1000,step:1}));
+    fields.append(inputControl(group,i,item,'club','아이언 종류','text',IRONS.map(x=>[x,/^\d+$/.test(x)?x+'번 아이언':x]),{onChange:reinherit}),inputControl(group,i,item,'goal','집중 목표','text',GOALS.map(x=>[x,x])),inputControl(group,i,item,'balls','공 개수','number',null,{min:1,max:1000,step:1}),targetControl('예: 디봇이 공 앞'));
    }else if(meta.key==='long'){
-    fields.append(inputControl(group,i,item,'clubType','클럽 종류','text',[['utility','유틸리티'],['wood','우드'],['driver','드라이버']]));
-    fields.append(inputControl(group,i,item,'number','번호 (선택)','number',null,{min:1,max:15,step:1,placeholder:'예: 4'}),inputControl(group,i,item,'loft','로프트 ° (선택)','number',null,{min:0,max:60,step:0.5,placeholder:'예: 21'}));
-    fields.append(inputControl(group,i,item,'focus','집중할 포인트','text',null,{wide:true,maxlength:30,placeholder:'예: 정타와 목표 방향'}),inputControl(group,i,item,'balls','공 개수','number',null,{min:1,max:1000,step:1}));
+    fields.append(inputControl(group,i,item,'clubType','클럽 종류','text',[['utility','유틸리티'],['wood','우드'],['driver','드라이버']],{onChange:reinherit}));
+    fields.append(inputControl(group,i,item,'number','번호 (선택)','number',null,{min:1,max:15,step:1,placeholder:'예: 4',onChange:reinherit}),inputControl(group,i,item,'loft','로프트 ° (선택)','number',null,{min:0,max:60,step:0.5,placeholder:'예: 21'}));
+    fields.append(inputControl(group,i,item,'focus','집중할 포인트','text',null,{wide:true,maxlength:30,placeholder:'예: 정타와 목표 방향'}),inputControl(group,i,item,'balls','공 개수','number',null,{min:1,max:1000,step:1}),targetControl('예: 페어웨이 안착'));
    }else{
     fields.classList.add('two');fields.append(inputControl(group,i,item,'focus','실전 연습 내용','text',null,{wide:true,maxlength:100,placeholder:'클럽 교체 및 실전 상황'}),inputControl(group,i,item,'balls','공 개수','number',null,{min:1,max:1000,step:1}));
    }
@@ -1083,6 +1099,7 @@ function validateDraft(draft){
  if(sumPlan(draft)>PLAN_BALL_LIMIT)return `루틴 전체 공 개수는 최대 ${PLAN_BALL_LIMIT.toLocaleString('ko-KR')}구까지 설정할 수 있습니다.`;
  for(const s of draft){for(const item of s.items){
   const n=Number(item.balls);if(!Number.isInteger(n)||n<1||n>1000)return '모든 항목의 공 개수는 1~1,000 사이의 정수로 입력하세요.';
+  if(s.key!=='sim'&&String(item.target??'').length>30)return '목표 수치는 30자 이내로 입력하세요.';
   if(s.key==='wedge'){
    if(!finiteNumber(item.loft)||Number(item.loft)<0||Number(item.loft)>80)return '웨지 로프트는 0~80°로 입력하세요.';
    if(!finiteNumber(item.distance)||Number(item.distance)<0||Number(item.distance)>300)return '웨지 목표 거리는 0~300m로 입력하세요.';
@@ -1146,7 +1163,7 @@ async function pipeBytes(bytes,stream,max){
  const out=new Uint8Array(size);let offset=0;parts.forEach(part=>{out.set(part,offset);offset+=part.length});return out;
 }
 async function encodeShareToken(){
- const compact=[SECTIONS.map(sec=>{const group=basePlan.find(s=>s.key===sec.key);return (group?group.items:[]).map(it=>[...SHARE_ROW[sec.key].map(k=>it[k]),it.balls])}),baseShared.map(x=>x.text)];
+ const compact=[SECTIONS.map(sec=>{const group=basePlan.find(s=>s.key===sec.key);return (group?group.items:[]).map(it=>[...SHARE_ROW[sec.key].map(k=>it[k]),it.balls,...(sec.key==='sim'?[]:[it.target||''])])}),baseShared.map(x=>x.text)];
  const bytes=new TextEncoder().encode(JSON.stringify(compact));
  if(typeof CompressionStream==='function'){try{return 'Z'+b64urlEncode(await pipeBytes(bytes,new CompressionStream('deflate-raw'),SHARE_MAX_BYTES))}catch{}}
  return 'C'+b64urlEncode(bytes);
@@ -1164,7 +1181,7 @@ async function parseShareInput(text){
   if(!Array.isArray(data)||!Array.isArray(data[0])||!Array.isArray(data[1]))throw Error('format');
   rawPlan=SECTIONS.map((sec,si)=>({key:sec.key,items:(Array.isArray(data[0][si])?data[0][si]:[]).map((row,i)=>{
    if(!Array.isArray(row))throw Error('format');
-   const keys=SHARE_ROW[sec.key],item={id:SHARE_ID[sec.key]+(i+1)};keys.forEach((k,j)=>{item[k]=row[j]});item.balls=row[keys.length];return item;
+   const keys=SHARE_ROW[sec.key],item={id:SHARE_ID[sec.key]+(i+1)};keys.forEach((k,j)=>{item[k]=row[j]});item.balls=row[keys.length];if(sec.key!=='sim')item.target=row[keys.length+1];return item;
   })}));
   rawShared=data[1].map((value,i)=>({id:'c'+(i+1),text:value}));
  }else{
