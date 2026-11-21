@@ -25,6 +25,9 @@
 
 12. 앱 기본 루틴(`builtInPlan`, v8.4.0~): 아마추어 평균 거리 기준 100구(웨지 36 · 아이언 35 · 유틸리티/우드/드라이버 24 · 실전 5), 목표 수치는 일반 문구. 이전 기본 루틴은 `legacyPlan`으로 보존 — **계획 스냅샷이 없는 옛 날짜 기록(`entryPlan`)·계획 없는 옛 현재 체크 해석에만 사용, 수정 금지(정책 8)**. 저장된 `나의 기본 루틴`이 있는 사용자는 영향 없음, 저장 안 한 사용자만 새 기본값을 봄. 기본 루틴을 또 바꿀 때는 `legacyPlan`을 건드리지 말 것.
 
+13. 루틴 목록(v8.5.0~): 이름 붙여 저장한 루틴 최대 10개(`RLIST_MAX`). 기록 저장(`저장`·`저장 + 백업`) 뒤, 목록에 같은 내용(`routineSig`: 항목 ID 제외 + 공통 체크 문구)이 없을 때만 `이름을 붙여 저장할까요?`를 물음(`저장 제안 끄기` 가능). 백업 저장 창은 클릭 직후에 열려야 해서 `저장 + 백업`은 백업이 끝난 뒤 묻는다. 가득 차면 삭제할 루틴을 골라 교체(자동 삭제 없음). 목록 루틴의 `오늘에 적용`은 체크 초기화(확인창), `기본 루틴으로`만 `나의 기본 루틴`을 바꿈 — 정책 4·8 유지(목록 수정·삭제는 지난 기록에 영향 없음). `이전 루틴 불러오기`는 연습 기록 스냅샷에서 같은 내용 1회만, 최근 12개를 보여줌. 백업은 `version: 6` 유지하고 `routineList` 필드만 추가(없는 옛 백업도 복원). 복원 시 같은 id 또는 같은 이름+같은 내용은 건너뛰고 10개까지만 합침.
+14. 루틴 편집 화면은 상단 고정 바(`취소`·`✓ 저장`·총 구수, `position:sticky`). 고친 내용이 있으면 취소 시 `askConfirm`으로 확인. `#routinePanel`에 `overflow:clip`(visible 폴백)을 써야 sticky가 동작 — `.card{overflow:hidden}`으로 되돌리면 고정 바가 깨짐.
+
 ## 데이터 (localStorage, 사이트 주소별 저장)
 | 키 | 내용 |
 |---|---|
@@ -33,6 +36,7 @@
 | `golf_diary_default_routine_v2` / `golf_diary_shared_default_v1` | 기본 루틴 / 기본 공통 체크 |
 | `golf_100_swing_feels_v1` / `golf_100_swing_defaults_v1` | 스윙 메모 / 개인 기본 문구 |
 | `golf_diary_planner_pref_v2` | 시간 배분 선호 |
+| `golf_diary_routine_list_v1` | 루틴 목록 `{promptOff, items:[{id,name(20자),plan,shared,savedAt,lastUsed}]}` (최대 10개) |
 | `golf_diary_last_backup_v1` / `golf_diary_notice_dismissed_v1` | 마지막 백업 시각 / 안내 배너 닫음 기록 |
 
 - JSON 백업 `type: golf-practice-diary`, `version: 6`. **키 이름·백업 형식 변경 시 기존 사용자 데이터 이관/복원 호환 필수.**
