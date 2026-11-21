@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10251d">
+  <meta name="description" content="오프라인 골프 연습일기: 맞춤 구수 체크리스트, 매 샷 체크 편집, 날짜별 연습 기록">
+  <title>⛳ Everyday Practice Note · 매일매일 연습일기</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="⛳ Everyday Practice Note · 매일매일 연습일기">
+  <meta property="og:description" content="맞춤 연습 루틴 체크 · 시간별 공 배분 · 날짜별 연습일기. 기록은 내 기기에만 저장됩니다.">
+  <meta property="og:image" content="icon-512.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Practice Note">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <style>
+    :root{--bg:#f5f7f4;--card:#fff;--ink:#1c2c26;--muted:#66766d;--green:#247354;--deep:#10251d;--line:#dfe7df;--pale:#ebf5ee;--shadow:0 3px 18px rgba(18,44,30,.055)}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.45;-webkit-tap-highlight-color:transparent}
+    button,input,textarea{font:inherit}
+    button{cursor:pointer}
+    .page{max-width:760px;margin:0 auto;padding:0 16px calc(56px + env(safe-area-inset-bottom))}
+    header{background:var(--deep);color:#fff;padding:30px 0 34px;margin-bottom:-16px}
+    .head-inner{max-width:760px;margin:0 auto;padding:0 20px}
+    .overline{color:#b4d2c2;font-size:12px;letter-spacing:.12em;font-weight:750;margin:0 0 10px}
+    h1{font-size:clamp(22px,5vw,30px);line-height:1.28;letter-spacing:-.06em;margin:0;font-weight:850}
+    .head-foot{margin:12px 0 0;color:#c9ddd0;font-size:13px}
+    .card{background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:18px;margin:15px 0;overflow:hidden}
+    .progress-card{position:relative;box-shadow:0 12px 30px rgba(16,37,29,.12);border:0;padding:22px}
+    .between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .eyebrow{color:var(--muted);font-size:13px;font-weight:700}
+    .count{display:flex;align-items:baseline;gap:4px;margin-top:9px}
+    .count strong{font-size:42px;letter-spacing:-.05em;line-height:1.1;font-variant-numeric:tabular-nums}
+    .count span{font-size:19px;color:var(--muted);font-weight:700}
+    .pct{font-size:27px;font-weight:850;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--green)}
+    .bar{background:#e5ede7;border-radius:100px;height:12px;overflow:hidden;margin-top:16px}
+    .bar-fill{background:linear-gradient(90deg,#397f64,#80c79c);height:100%;width:0;transition:width .18s;border-radius:100px}
+    .completed{font-size:12px;color:var(--green);min-height:18px;margin-top:10px;font-weight:700}
+    .small-btn{background:white;border:1px solid #cad8cf;border-radius:11px;padding:9px 12px;color:#385d49;font-weight:750;font-size:13px;white-space:nowrap}
+    .small-btn:active,.main-btn:active{transform:scale(.98)}
+    section h2{font-size:17px;letter-spacing:-.035em;margin:0;font-weight:800}
+    .section-head{padding:18px 18px 14px}
+    .section-sub{font-size:13px;color:var(--muted);font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .section-bar{height:4px;background:#edf2ee}
+    .section-bar>div{height:100%;background:#73af88;transition:width .18s;width:0}
+    .items{padding:0 12px 6px}
+    .check-item{display:flex;align-items:center;gap:11px;min-height:57px;padding:12px 7px;border-bottom:1px solid #eef1ed;cursor:pointer;user-select:none}
+    .check-item:last-child{border-bottom:0}
+    .check-item:active{background:#f5faf6}
+    .check-item input{appearance:none;-webkit-appearance:none;flex:0 0 24px;width:24px;height:24px;margin:0;border:2px solid #a9b9ad;border-radius:7px;background:#fff;position:relative;cursor:pointer}
+    .check-item input:checked{background:var(--green);border-color:var(--green)}
+    .check-item input:checked:after{content:"";position:absolute;left:6px;top:2px;width:7px;height:12px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+    .item-name{flex:1;font-size:15px;font-weight:600;line-height:1.45}
+    .check-item input:checked+.item-name{color:#74847a;text-decoration:line-through;text-decoration-color:#abbdb0}
+    .balls{flex-shrink:0;color:#789083;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+    .check-item input:focus-visible,.small-btn:focus-visible,.main-btn:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #a5d1ad;outline-offset:2px}
+    .notes{padding:0 18px 20px}
+    .field{margin-top:14px}
+    .field label{display:block;font-size:13px;font-weight:750;color:#506557;margin-bottom:7px}
+    .field input,.field textarea{display:block;width:100%;border:1px solid #d5dfd7;border-radius:11px;background:#fff;padding:12px 13px;color:#263b2d;font-size:15px;min-height:47px;outline:none}
+    .field textarea{resize:vertical;min-height:92px}
+    .field input::placeholder,.field textarea::placeholder{color:#9eada2}
+    .actions{display:flex;gap:9px;margin-top:18px}
+    .main-btn{border:0;background:var(--green);color:#fff;border-radius:12px;padding:13px 17px;font-size:15px;font-weight:800;flex:1}
+    .outline-btn{border:1px solid #c8d8cd;background:#f7fbf8;color:#2e694c}
+    .history-list{padding:0 18px 18px}
+    .empty{color:#8a998c;font-size:14px;margin:4px 0 5px}
+    .history-entry{border:1px solid #e3ebe5;border-radius:12px;padding:13px;margin-top:10px}
+    .history-title{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:800;font-size:14px}
+    .history-note{color:#61766a;font-size:12px;margin-top:7px;white-space:pre-wrap;overflow-wrap:anywhere}
+    .history-ctrl{margin-top:11px;display:flex;justify-content:flex-end;gap:8px}
+    .history-ctrl button{background:#fff;border:1px solid #d4e1d7;padding:7px 10px;font-size:12px;border-radius:8px;color:#44614f;font-weight:700}
+    .info{font-size:12px;color:#84968a;text-align:center;margin:18px 3px 8px}
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom));background:#1e4431;color:white;padding:12px 18px;border-radius:12px;box-shadow:0 10px 25px #0002;z-index:10;font-size:14px;opacity:0;pointer-events:none;transition:opacity .18s;max-width:90%;text-align:center}
+    .toast.show{opacity:1}
+
+    /* 필드에서 기억한 스윙 감각: 짧게 확인하고 필요할 때 펼쳐 보기 */
+    .feel-card{border-color:#cbded1;background:linear-gradient(135deg,#fff,#f7fbf8)}
+    .feel-head{padding:18px 18px 10px}
+    .feel-kicker{margin:0 0 5px;color:var(--green);font-size:11px;letter-spacing:.08em;font-weight:850}
+    .feel-caption{font-size:12px;color:var(--muted);margin:7px 0 0}
+    .feel-list{padding:0 14px 14px;display:grid;gap:9px}
+    .feel-note{background:#fff;border:1px solid #dce8df;border-radius:13px;overflow:hidden}
+    .feel-note summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 13px;user-select:none}
+    .feel-note summary::-webkit-details-marker{display:none}
+    .feel-note summary:focus-visible{outline:3px solid #a5d1ad;outline-offset:-3px}
+    .feel-note-icon{flex:0 0 auto;width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#edf5ef;font-size:19px}
+    .feel-note-main{flex:1;min-width:0}
+    .feel-note-name{font-size:15px;font-weight:850;display:block}
+    .feel-note-hint{font-size:12px;color:#61776a;display:block;margin-top:3px;line-height:1.45}
+    .feel-chevron{font-size:14px;color:#668173;transition:transform .2s ease}
+    .feel-note[open] .feel-chevron{transform:rotate(180deg)}
+    .feel-note-body{padding:0 16px 16px;border-top:1px solid #edf2ee}
+    .feel-steps{list-style:none;padding:0;margin:13px 0 0;display:grid;gap:13px}
+    .feel-steps li{font-size:13px;line-height:1.6;color:#3c5345}
+    .feel-steps strong{display:block;font-size:12px;color:#28724f;margin-bottom:2px}
+    .feel-remember{margin-top:14px;padding:11px 12px;border-radius:10px;background:#edf7f0;font-size:13px;line-height:1.55;color:#23563d;font-weight:750}
+    .feel-jump{font-size:12px;color:var(--green);font-weight:700;text-decoration:none;display:inline-block;margin:3px 18px 14px}
+    .feel-jump:focus-visible{outline:3px solid #a5d1ad;outline-offset:2px}
+
+
+    /* 스윙 감각 메모: 화면에서 직접 수정하고 로컬 저장 */
+    [hidden]{display:none !important}
+    .feel-view-actions{display:flex;justify-content:flex-end;margin-top:12px}
+    .feel-edit-btn{background:#f5fbf6;border-color:#b9d4c2;color:#246543}
+    .feel-editor{border-top:1px solid #edf2ee;margin-top:12px}
+    .feel-editor .field{margin-top:13px}
+    .feel-editor label{font-size:12px}
+    .feel-editor textarea{width:100%;resize:vertical;min-height:128px;line-height:1.58}
+    .feel-editor input{width:100%}
+    .feel-editor .field textarea.short{min-height:78px}
+    .feel-editor .feel-editor-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+    .feel-editor .feel-editor-buttons .small-btn{flex:1;min-width:72px}
+    .feel-editor .feel-save-btn{background:var(--green);color:#fff;border-color:var(--green)}
+    .feel-editor .edit-hint{margin:9px 0 0;font-size:11px;color:#728678;line-height:1.5}
+
+    /* 배포용 스윙 메모: 작성자 예시 / 개인 기본 문구 구분 */
+    .feel-caption{line-height:1.6}
+    .feel-default-status{margin:10px 0 0;font-size:11px;color:#6e8576;line-height:1.5}
+    .feel-default-actions{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;margin-top:11px}
+    .feel-default-actions .small-btn{white-space:normal;font-size:12px;padding:9px 10px}
+    .feel-example-btn{margin:8px 0 0;padding:5px 0;border:0;background:transparent;text-decoration:underline;text-underline-offset:2px;color:#617a68;font-size:11px;cursor:pointer}
+    .feel-view-actions{justify-content:flex-start;margin-top:13px}
+    .feel-view-actions .small-btn{white-space:normal}
+    .site-footer{text-align:center;margin:20px 0 0;padding:16px 0 10px;border-top:1px solid #d9e4dc;color:#809389;display:grid;gap:3px;line-height:1.45}
+    .site-footer span{font-size:11px}
+    .site-footer small{font-size:10px}
+    .site-footer strong{font-weight:700;color:#5a7364}
+
+    /* 날짜별 연습일기: 모든 메모가 한 화면에서 보이도록 표시 */
+    .diary-subtitle{margin:5px 0 0;color:var(--muted);font-size:12px;line-height:1.4}
+    .diary-totals{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 18px 10px}
+    .diary-totals>div{border-radius:12px;background:#f1f7f2;padding:12px 14px;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+    .diary-totals span{font-size:12px;color:#657e6c;font-weight:650}
+    .diary-totals strong{font-size:18px;color:#245c41;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .diary-tools{display:flex;gap:7px;flex-wrap:wrap;padding:0 18px 12px}
+    .diary-tools .small-btn{flex:1;min-width:94px;padding:9px 8px;font-size:12px}
+    .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;clip-path:inset(50%)}
+    .history-entry{padding:15px;margin-top:11px;background:#fff}
+    .history-title{align-items:center;flex-wrap:wrap}
+    .history-date{font-size:15px;letter-spacing:-.025em}
+    .history-date .weekday{color:#84958a;font-size:12px;margin-left:5px;font-weight:650}
+    .history-balls{color:var(--green);font-size:12px;font-weight:850;border-radius:99px;background:#ebf5ee;padding:5px 9px;white-space:nowrap}
+    .diary-fields{display:grid;grid-template-columns:1fr;gap:0;margin-top:8px}
+    .diary-field{padding:10px 0;border-top:1px solid #edf1ec;min-width:0}
+    .diary-field .diary-label{display:block;color:#769080;font-size:11px;font-weight:750;margin-bottom:4px}
+    .diary-field .diary-value{display:block;font-size:13px;line-height:1.55;color:#2c4536;white-space:pre-wrap;overflow-wrap:anywhere;min-height:20px}
+    .diary-field .diary-value.missing{color:#afbbb2}
+    .history-ctrl{margin-top:2px;flex-wrap:wrap}
+    .history-ctrl button{min-height:33px}
+
+    /* 브라우저 로컬 저장과 기기 파일 백업을 명확히 구분 */
+    .storage-card{border-color:#c8dfce}
+    .storage-status{margin:0 18px 12px;border:1px solid #d9e7dd;background:#f5faf6;border-radius:12px;padding:12px 13px;font-size:13px;line-height:1.55}
+    .storage-status strong{display:block;color:#225d40;font-size:13px;margin-bottom:3px}
+    .storage-status.warn{background:#fff9ef;border-color:#f1d6a5}
+    .storage-status.warn strong{color:#91631e}
+    .storage-actions{padding:0 18px 8px;display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .storage-actions .main-btn{min-height:48px;font-size:13px;padding:11px 9px}
+    .storage-actions .main-btn:first-child{grid-column:1/-1}
+    .storage-help{padding:0 18px 18px;margin:1px 0;color:#526b59;font-size:12px;line-height:1.6}
+    .storage-help p{margin:9px 0 0}
+    .storage-help b{color:#2e5c41}
+    .quick-backup{width:100%;margin-top:9px;padding:11px;border:1px solid #afceb7;border-radius:12px;background:#edf7f0;color:#245e3d;font-weight:800;font-size:13px}
+    .file-notice{font-size:11px;color:#718578;margin:7px 0 0;line-height:1.55}
+    @media(min-width:690px){.diary-fields{grid-template-columns:1fr 1fr}.diary-field:nth-child(2){padding-left:13px}.diary-field:last-child{grid-column:1/-1}}
+    @media(max-width:380px){.diary-totals{margin-left:12px;margin-right:12px}.diary-tools{padding-left:12px;padding-right:12px}.diary-tools .small-btn{font-size:11px}}
+    @media(min-width:690px){.page{padding-left:22px;padding-right:22px}.card{margin:18px 0}.section-head{padding:19px 22px 16px}.items{padding-left:17px;padding-right:17px}.check-item{min-height:53px}}
+    @media(max-width:380px){.page{padding-left:11px;padding-right:11px}.progress-card{padding:18px}.item-name{font-size:14px}.section-head{padding:16px 14px}.items{padding:0 9px 5px}.actions{flex-direction:column}}
+    @media print{header{background:#fff;color:#000;padding-bottom:14px}.head-foot,.overline,.actions,.small-btn,.info,.toast{display:none}.page{max-width:none}.card{box-shadow:none;break-inside:avoid}body{background:#fff}}
+
+/* v5: 맞춤 연습 루틴 및 시간별 배분 */
+.routine-card,.planner-card{border-color:#c9dfcf}
+.routine-quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 18px 10px}
+.routine-stat{background:#f1f7f2;border-radius:11px;padding:12px 13px;display:flex;flex-direction:column;gap:5px}
+.routine-stat span{font-size:11px;color:#65836f;font-weight:750}
+.routine-stat strong{color:#265e42;font-size:18px}
+.routine-actions{padding:0 18px 18px;display:flex;flex-wrap:wrap;gap:8px}
+.routine-actions .small-btn{flex:1 1 130px;white-space:normal;min-height:40px}
+.routine-editor{border-top:1px solid #e1eae3;padding:15px 18px 20px;background:#fcfefc}
+.editor-title{margin-bottom:10px}
+.editor-group{border:1px solid #e0e9e0;border-radius:13px;margin-top:13px;background:#fff;overflow:hidden}
+.editor-group-header{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:11px 12px;background:#f2f8f4}
+.editor-group-header strong{font-size:13px}
+.editor-group-header .small-btn{padding:7px 9px;font-size:11px}
+.edit-item{padding:11px 12px;border-top:1px solid #edf1ed}
+.edit-item .row-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.edit-item .row-title b{font-size:12px;color:#32674b}
+.row-buttons{display:flex;align-items:center;gap:4px}
+.row-buttons button{border:1px solid #d1dfd4;background:#fff;color:#466953;padding:4px 7px;min-width:30px;border-radius:7px;font-weight:700;font-size:12px}
+.row-buttons .delete{color:#a04545;border-color:#eed6d6}
+.edit-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.edit-fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.edit-fields.one{grid-template-columns:minmax(0,1fr)}
+.edit-fields .field{margin-top:0;min-width:0}
+.edit-fields label{margin-bottom:5px;font-size:11px}
+.edit-fields input,.edit-fields select,.planner-content select{width:100%;min-width:0;border:1px solid #d5dfd7;border-radius:9px;padding:9px 8px;background:#fff;color:#263b2d;min-height:42px;font-size:14px}
+.edit-fields input[type=number]{font-variant-numeric:tabular-nums}
+.edit-fields .focus-field{grid-column:1/-1}
+.edit-empty{padding:13px;font-size:12px;color:#8b9c90}
+.routine-editor>.actions{margin-top:18px}
+.routine-editor>.feel-example-btn{margin-top:12px}
+.planner-content{padding:0 18px 20px}
+.planner-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.planner-grid .field{margin-top:0}
+.planner-content select{padding:11px 10px}
+.wide{width:100%;margin-top:16px}
+.allocation-result{background:#f1f8f3;border:1px solid #d3e6d6;border-radius:13px;padding:14px;margin-top:14px}
+.allocation-total{display:flex;align-items:baseline;gap:5px;margin-top:2px}
+.allocation-total strong{font-size:31px;color:#256d4d}
+.allocation-total span{color:#698777;font-weight:700}
+.allocation-caption{font-size:11px;color:#77917c;text-align:right;max-width:48%}
+.allocation-rows{margin-top:10px;border-top:1px solid #dbe8dd;padding-top:6px}
+.allocation-row{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:5px 0;font-size:12px}
+.allocation-row b{color:#315b45;white-space:nowrap}
+.allocation-warning{font-size:11px;color:#946327;margin:8px 0 0}
+.check-item[aria-disabled=true]{opacity:.48;cursor:default}
+.item-name .subname{display:block;font-size:12px;font-weight:500;color:#788c7d;margin-top:2px}
+.section-head .section-sub{flex-shrink:0}
+.history-plan{margin-top:10px;background:#f8fbf8;border-radius:9px;padding:9px 11px;border:1px solid #e5ede6}
+.history-plan summary{cursor:pointer;font-size:12px;color:#476653;font-weight:750}
+.history-plan ul{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:6px}
+.history-plan li{font-size:12px;color:#597161;display:flex;gap:8px;justify-content:space-between}
+.history-plan li .checked{color:#247354;font-weight:800}
+.storage-help{overflow-wrap:anywhere}
+@media(max-width:390px){.routine-quick{padding:0 12px 10px}.routine-actions{padding:0 12px 14px}.routine-editor,.planner-content{padding-left:12px;padding-right:12px}.edit-fields{gap:6px}.edit-fields input,.edit-fields select{font-size:13px;padding-left:6px}.planner-grid{gap:8px}}
+@media print{.routine-editor,.planner-card,.routine-actions{display:none}}
+
+
+/* 루틴 편집의 자체 확인 영역 — 기본 alert/confirm 비지원 환경 대응 */
+.edit-delete-confirm{margin:10px 0 0;padding:11px 12px;border-radius:10px;border:1px solid #e6c5c5;background:#fff7f7;display:grid;gap:9px}
+.edit-delete-confirm span{font-size:12px;color:#784242;line-height:1.5}
+.edit-delete-actions{display:flex;justify-content:flex-end;gap:7px}
+.edit-delete-actions button{border-radius:8px;padding:7px 12px;font-weight:750;font-size:12px;cursor:pointer}
+.edit-delete-actions .delete-cancel{background:#fff;border:1px solid #cfdbd1;color:#455d4e}
+.edit-delete-actions .delete-yes{background:#a24343;color:#fff;border:1px solid #a24343}
+.edit-delete-actions button:focus-visible{outline:2px solid #356c4c;outline-offset:2px}
+/* v7: iOS Edge에서도 클릭 가능한 단일 터치 삭제, 변경 메시지, 매 샷 공통 체크 편집 */
+.editor-feedback{position:sticky;top:8px;z-index:3;background:#edf7f0;border:1px solid #bad9c6;border-radius:11px;padding:10px 12px;color:#285b40;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:11px 0;font-size:12px;line-height:1.55;font-weight:700}
+.editor-feedback .small-btn{flex-shrink:0;border-color:#a7cdb4;background:white;color:#276140;padding:6px 9px}
+.edit-shared-help{margin:8px 12px 10px;font-size:12px;color:#698172;line-height:1.5}
+.history-delete-confirm{margin-top:10px;padding:10px;border:1px solid #e7c8c8;background:#fff8f8;border-radius:10px;font-size:12px;color:#914c4c;display:grid;gap:9px}
+.history-delete-confirm .edit-delete-actions{justify-content:flex-end}
+button{touch-action:manipulation}
+/* v8: 웹 배포 — 화면 안 확인창(confirm/alert 대체), 설치·이전·백업 안내 */
+.app-dialog-backdrop{position:fixed;inset:0;background:rgba(10,25,18,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding:16px 14px calc(16px + env(safe-area-inset-bottom))}
+@media(min-width:600px){.app-dialog-backdrop{align-items:center}}
+.app-dialog{background:#fff;border-radius:16px;max-width:440px;width:100%;padding:18px;box-shadow:0 18px 40px rgba(0,0,0,.25)}
+.app-dialog h3{margin:0 0 8px;font-size:16px;letter-spacing:-.03em}
+.app-dialog p{margin:0;font-size:14px;line-height:1.6;color:#3b5245;white-space:pre-wrap;word-break:keep-all}
+.app-dialog .actions{margin-top:16px}
+.app-dialog .danger{background:#a24343}
+.notice{margin:15px 0;border-radius:14px;padding:13px 14px;font-size:13px;line-height:1.55;border:1px solid #cfe1d4;background:#f2f9f4;color:#2c4d3a}
+.notice.warn{background:#fff8ec;border-color:#efd3a2;color:#6f4c16}
+.notice strong{display:block;margin-bottom:3px;font-size:13px}
+.notice-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.notice-actions .small-btn{font-size:12px;padding:7px 10px}
+.backup-stamp{margin:0 18px 12px;font-size:12px;color:#5d7466}
+.backup-stamp.stale{color:#91631e;font-weight:700}
+.planner-error{margin:10px 0 0;font-size:12px;color:#a04545;font-weight:700}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="head-inner"><p class="overline">GOLF PRACTICE · DAILY ROUTINE</p><h1>⛳ Everyday Practice Note</h1><p class="head-foot">매일매일 연습일기 · 맞춤 루틴 · 스윙 감각 · 날짜별 연습 기록</p></div>
+  </header>
+  <main class="page">
+    <div class="card progress-card" aria-live="polite" aria-atomic="true">
+      <div class="between"><span class="eyebrow">전체 연습 진행률</span><button type="button" class="small-btn" id="reset">↻ 새 연습 시작</button></div>
+      <div class="between"><div class="count"><strong id="done">0</strong><span id="totalBalls">/ 100구</span></div><div class="pct" id="percent">0%</div></div>
+      <div class="bar" role="progressbar" aria-label="오늘 연습 진행률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressbar"><div class="bar-fill" id="barFill"></div></div>
+      <div class="completed" id="completeMsg"></div>
+    </div>
+    <div id="appNotices" aria-live="polite"></div>
+    <section class="card feel-card" id="swing-feel" aria-labelledby="swing-feel-title">
+      <div class="feel-head">
+        <p class="feel-kicker">지난 필드(연습)의 좋은 감각 · 제작자 예시</p>
+        <h2 id="swing-feel-title">⛳ 스윙 감각 메모</h2>
+        <p class="feel-caption">아래 내용은 제작자의 개인 연습 감각을 담은 <strong>예시</strong>입니다. 사람마다 맞는 스윙 느낌이 다를 수 있으니, 직접 수정해 나만의 메모로 사용하세요.</p>
+      </div>
+      <div class="feel-list">
+        <details class="feel-note" id="driver-feel">
+          <summary>
+            <span class="feel-note-icon" aria-hidden="true">🏌️</span>
+            <span class="feel-note-main"><span class="feel-note-name">드라이버</span><span class="feel-note-hint" id="driver-feel-hint">오른눈 · 오른손 힘 빼기 · 아주 천천히 · 오른팔 자연스럽게</span></span>
+            <span class="feel-chevron" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="feel-note-body">
+            <div class="feel-view" id="driver-feel-view">
+            <ol class="feel-steps" id="driver-feel-steps">
+              <li><strong>01 · 어드레스 / 그립</strong>오른눈 기준으로 공을 바라본다. 오른손은 확실한 위크 그립으로, 거의 잡지 않는 느낌까지 가볍게.</li>
+              <li><strong>02 · 백스윙</strong>아주 천천히. 수평을 유지하는 감각으로 오른손을 밀어 올리듯, 왼어깨는 살짝 들어가도록 업라이트하게.</li>
+              <li><strong>03 · 다운스윙</strong>서두르지 않고 최대한 끌고 내려온다. 접힌 오른팔이 자연스럽게 펴지는 느낌에 집중.</li>
+              <li><strong>04 · 임팩트</strong>공을 확실히 맞힌다는 느낌으로, 급하게 치지 않는다.</li>
+            </ol>
+            <div class="feel-remember" id="driver-feel-remember">기억할 감각 · 피니시가 완벽하지 않아도 공이 똑바로 날아갔던 그 템포와 타격감.</div>
+              <div class="feel-view-actions"><button type="button" class="small-btn feel-edit-btn" data-feel-edit="driver">✎ 내 메모 수정</button></div>
+              <div class="feel-default-actions">
+                <button type="button" class="small-btn" data-feel-set-default="driver">☆ 내 기본 문구로 설정</button>
+                <button type="button" class="small-btn" data-feel-restore="driver">↺ 기본 문구 복원</button>
+              </div>
+              <p class="feel-default-status" id="driver-feel-default-status">기본 문구: 제작자 예시</p>
+              <button type="button" class="feel-example-btn" data-feel-example="driver">제작자 예시 문구로 되돌리기</button>
+            </div>
+            <div class="feel-editor" id="driver-feel-editor" hidden>
+              <div class="field"><label for="driver-feel-summary-edit">핵심 요약 (접었을 때 보이는 문구)</label><input id="driver-feel-summary-edit" type="text" autocomplete="off"></div>
+              <div class="field"><label for="driver-feel-details-edit">스윙 포인트 (한 줄에 한 항목)</label><textarea id="driver-feel-details-edit" rows="7"></textarea></div>
+              <div class="field"><label for="driver-feel-remember-edit">꼭 기억할 감각</label><textarea class="short" id="driver-feel-remember-edit" rows="3"></textarea></div>
+              <div class="feel-editor-buttons">
+                <button type="button" class="small-btn feel-save-btn" data-feel-save="driver">✓ 메모 저장</button>
+                <button type="button" class="small-btn" data-feel-save-default="driver">저장하고 내 기본으로 설정</button>
+                <button type="button" class="small-btn" data-feel-cancel="driver">취소</button>
+              </div>
+              <p class="edit-hint">메모는 이 기기의 브라우저에 저장됩니다. ‘내 기본 문구로 설정’하면 언제든 복원할 수 있고, JSON 백업에도 함께 포함됩니다.</p>
+            </div>
+          </div>
+        </details>
+        <details class="feel-note" id="iron-feel">
+          <summary>
+            <span class="feel-note-icon" aria-hidden="true">🎯</span>
+            <span class="feel-note-main"><span class="feel-note-name">아이언 / 유틸리티</span><span class="feel-note-hint" id="iron-feel-hint">확실한 위크 그립 · 천천히 · 공 먼저 · 정타와 방향</span></span>
+            <span class="feel-chevron" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="feel-note-body">
+            <div class="feel-view" id="iron-feel-view">
+            <ol class="feel-steps" id="iron-feel-steps">
+              <li><strong>01 · 그립</strong>확실한 위크 그립을 잡되 손에는 불필요한 힘을 주지 않는다.</li>
+              <li><strong>02 · 템포</strong>백스윙도 천천히, 다운스윙도 천천히. 속도보다 정확한 컨택에 집중.</li>
+              <li><strong>03 · 임팩트</strong>컷샷 느낌으로 공부터 확실히 맞힌다. 땅을 억지로 세게 찍지 않는다.</li>
+              <li><strong>04 · 구질</strong>서두르지 않았을 때 왼쪽 미스 없이 자연스러운 페이드가 나왔던 감각을 유지.</li>
+            </ol>
+            <div class="feel-remember" id="iron-feel-remember">기억할 감각 · 거리 욕심보다 정타와 방향성 우선.</div>
+              <div class="feel-view-actions"><button type="button" class="small-btn feel-edit-btn" data-feel-edit="iron">✎ 내 메모 수정</button></div>
+              <div class="feel-default-actions">
+                <button type="button" class="small-btn" data-feel-set-default="iron">☆ 내 기본 문구로 설정</button>
+                <button type="button" class="small-btn" data-feel-restore="iron">↺ 기본 문구 복원</button>
+              </div>
+              <p class="feel-default-status" id="iron-feel-default-status">기본 문구: 제작자 예시</p>
+              <button type="button" class="feel-example-btn" data-feel-example="iron">제작자 예시 문구로 되돌리기</button>
+            </div>
+            <div class="feel-editor" id="iron-feel-editor" hidden>
+              <div class="field"><label for="iron-feel-summary-edit">핵심 요약 (접었을 때 보이는 문구)</label><input id="iron-feel-summary-edit" type="text" autocomplete="off"></div>
+              <div class="field"><label for="iron-feel-details-edit">스윙 포인트 (한 줄에 한 항목)</label><textarea id="iron-feel-details-edit" rows="7"></textarea></div>
+              <div class="field"><label for="iron-feel-remember-edit">꼭 기억할 감각</label><textarea class="short" id="iron-feel-remember-edit" rows="3"></textarea></div>
+              <div class="feel-editor-buttons">
+                <button type="button" class="small-btn feel-save-btn" data-feel-save="iron">✓ 메모 저장</button>
+                <button type="button" class="small-btn" data-feel-save-default="iron">저장하고 내 기본으로 설정</button>
+                <button type="button" class="small-btn" data-feel-cancel="iron">취소</button>
+              </div>
+              <p class="edit-hint">메모는 이 기기의 브라우저에 저장됩니다. ‘내 기본 문구로 설정’하면 언제든 복원할 수 있고, JSON 백업에도 함께 포함됩니다.</p>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+    <section class="card routine-card" id="routinePanel" aria-labelledby="routineTitle">
+      <div class="section-head"><p class="feel-kicker">MY PRACTICE ROUTINE</p><h2 id="routineTitle">내 연습 루틴 · 오늘의 계획</h2><p class="diary-subtitle">클럽·공 개수·집중 목표와 매 샷 공통 체크를 편집할 수 있어요. 새 연습 시작은 체크와 진행률만 0%로 초기화합니다.</p></div>
+      <div class="routine-quick">
+        <div class="routine-stat"><span>나의 기본 루틴</span><strong id="baseCount">100구</strong></div>
+        <div class="routine-stat"><span>오늘의 연습 계획</span><strong id="todayCount">100구</strong></div>
+      </div>
+      <div class="routine-actions">
+        <button type="button" class="small-btn" id="editBase">⚙ 기본 루틴 편집</button>
+        <button type="button" class="small-btn" id="editToday">✎ 오늘 계획 편집</button>
+        <button type="button" class="small-btn" id="applyBase">↺ 기본 루틴을 오늘에 적용</button>
+      </div>
+      <div class="routine-editor" id="routineEditor" hidden>
+        <div class="between editor-title"><strong id="editorTitle">연습 항목 편집</strong><span class="section-sub" id="editorBallTotal"></span></div>
+        <p class="edit-hint" id="editorHint">항목 순서를 바꾸고 클럽·목표·공 개수를 편집하세요.</p>
+        <div class="editor-feedback" id="editorFeedback" role="status" aria-live="polite" hidden><span id="editorFeedbackText"></span><button type="button" class="small-btn" id="undoEditorDelete" hidden>↶ 삭제 취소</button></div>
+        <div id="editorSections"></div>
+        <div class="actions"><button type="button" class="main-btn" id="saveRoutine">✓ 수정 내용 저장</button><button type="button" class="main-btn outline-btn" id="cancelRoutine">취소</button></div>
+        <button type="button" class="feel-example-btn" id="restoreExample" hidden>기본 루틴을 최초 제작자 예시(100구)로 복원</button>
+      </div>
+    </section>
+    <section class="card planner-card" id="timePlanner" aria-labelledby="timePlannerTitle">
+      <div class="section-head"><p class="feel-kicker">SMART ALLOCATION</p><h2 id="timePlannerTitle">연습 시간별 공 배분 제안</h2><p class="diary-subtitle">현재 <b>오늘의 계획</b>을 기준으로 배분합니다. 퍼팅은 연습 시간에서 제외합니다.</p></div>
+      <div class="planner-content">
+        <div class="planner-grid">
+          <div class="field"><label for="practiceMinutes">연습 시간 (분)</label><input id="practiceMinutes" type="number" min="10" max="300" step="5" value="60" inputmode="numeric"></div>
+          <div class="field"><label for="shotPace">공 1개당 평균 시간</label><select id="shotPace"><option value="30">빠름 · 30초</option><option value="45" selected>보통 · 45초</option><option value="60">신중 · 60초</option><option value="90">꼼꼼 · 90초</option></select></div>
+        </div>
+        <div class="field"><label for="focusArea">오늘의 집중 분야</label><select id="focusArea"><option value="none">전체 균형</option><option value="wedge">웨지 / 어프로치 집중</option><option value="iron">아이언 집중</option><option value="long">유틸리티 / 우드 / 드라이버 집중</option><option value="sim">실전 시뮬레이션 집중</option></select></div>
+        <button type="button" class="main-btn wide" id="recommendBalls">⌁ 추천 공 배분 계산</button>
+        <p class="planner-error" id="plannerError" role="alert" hidden></p>
+        <div class="allocation-result" id="allocationResult" hidden aria-live="polite">
+          <div class="between"><div><span class="eyebrow">추천 총 공 개수</span><div class="allocation-total"><strong id="suggestTotal">0</strong><span>구</span></div></div><span class="allocation-caption" id="suggestCaption"></span></div>
+          <div id="suggestRows" class="allocation-rows"></div>
+          <p class="edit-hint">준비 시간 5분 제외 · 현재 계획 비율을 기준으로 집중 분야에 가중치 40% 적용 · 총량은 5구 단위 근사값. 제안값은 직접 수정할 수 있어요.</p>
+          <button type="button" class="main-btn wide" id="applySuggestion">✓ 이 배분으로 오늘 연습 시작</button>
+        </div>
+      </div>
+    </section>
+    <section class="card" data-section="0">
+      <div class="section-head between"><h2>1. 웨지 / 어프로치</h2><span class="section-sub" id="sectionCount0">0 / 35구</span></div>
+      <div class="section-bar"><div id="sectionFill0"></div></div>
+      <div class="items">
+      <label class="check-item"><input type="checkbox" data-check-id="w1" aria-label="56도 / 10m 5구"><span class="item-name">56도 / 10m</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="w2" aria-label="56도 / 20m 5구"><span class="item-name">56도 / 20m</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="w3" aria-label="56도 / 30m 5구"><span class="item-name">56도 / 30m</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="w4" aria-label="56도 / 50m 5구"><span class="item-name">56도 / 50m</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="w5" aria-label="50도 / 20m 5구"><span class="item-name">50도 / 20m</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="w6" aria-label="50도 / 50m 5구"><span class="item-name">50도 / 50m</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="w7" aria-label="50도 / 70m 5구"><span class="item-name">50도 / 70m</span><span class="balls">5구</span></label>
+      </div>
+    </section>
+    <section class="card" data-section="1">
+      <div class="section-head between"><h2>2. 아이언</h2><span class="section-sub" id="sectionCount1">0 / 35구</span></div>
+      <div class="section-bar"><div id="sectionFill1"></div></div>
+      <div class="items">
+      <label class="check-item"><input type="checkbox" data-check-id="i1" aria-label="PW / 하프스윙 5구"><span class="item-name">PW / 하프스윙</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="i2" aria-label="PW / 풀스윙 5구"><span class="item-name">PW / 풀스윙</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="i3" aria-label="9번 / 방향과 캐리 5구"><span class="item-name">9번 / 방향과 캐리</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="i4" aria-label="7번 / 정타 5구"><span class="item-name">7번 / 정타</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="i5" aria-label="7번 / 방향 5구"><span class="item-name">7번 / 방향</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="i6" aria-label="7번 / 목표 거리 5구"><span class="item-name">7번 / 목표 거리</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="i7" aria-label="5번 / 탑핑 방지 5구"><span class="item-name">5번 / 탑핑 방지</span><span class="balls">5구</span></label>
+      </div>
+      <a class="feel-jump" href="#iron-feel">↗ 아이언 / 유틸리티 스윙 감각 보기</a>
+    </section>
+    <section class="card" data-section="2">
+      <div class="section-head between"><h2>3. 유틸리티 / 우드 / 드라이버</h2><span class="section-sub" id="sectionCount2">0 / 25구</span></div>
+      <div class="section-bar"><div id="sectionFill2"></div></div>
+      <div class="items">
+      <label class="check-item"><input type="checkbox" data-check-id="d1" aria-label="4번 유틸 / 정타와 방향 10구"><span class="item-name">4번 유틸 / 정타와 방향</span><span class="balls">10구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="d2" aria-label="드라이버 / 그립과 백스윙 5구"><span class="item-name">드라이버 / 그립과 백스윙</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="d3" aria-label="드라이버 / 다운스윙과 오른팔 5구"><span class="item-name">드라이버 / 다운스윙과 오른팔</span><span class="balls">5구</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="d4" aria-label="드라이버 / 목표 방향과 탄도 5구"><span class="item-name">드라이버 / 목표 방향과 탄도</span><span class="balls">5구</span></label>
+      </div>
+      <a class="feel-jump" href="#driver-feel">↗ 드라이버 스윙 감각 보기</a>
+    </section>
+    <section class="card" data-section="3">
+      <div class="section-head between"><h2>4. 실전 시뮬레이션</h2><span class="section-sub" id="sectionCount3">0 / 5구</span></div>
+      <div class="section-bar"><div id="sectionFill3"></div></div>
+      <div class="items">
+      <label class="check-item"><input type="checkbox" data-check-id="s1" aria-label="드라이버 / 세컨드 / 어프로치, 매 샷 클럽 교체 5구"><span class="item-name">드라이버 / 세컨드 / 어프로치, 매 샷 클럽 교체</span><span class="balls">5구</span></label>
+      </div>
+    </section>
+    <section class="card" aria-labelledby="puttingTitle">
+      <div class="section-head between"><h2 id="puttingTitle">5. 퍼팅</h2><span class="section-sub">별도 10~15분</span></div><div class="items" id="putting">
+      <label class="check-item"><input type="checkbox" data-check-id="p1" aria-label="1m / 10개"><span class="item-name">1m / 10개</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="p2" aria-label="2m / 10개"><span class="item-name">2m / 10개</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="p3" aria-label="5~7m / 10개"><span class="item-name">5~7m / 10개</span></label>
+      </div>
+    </section>
+    <section class="card" aria-labelledby="sharedTitle">
+      <div class="section-head between"><h2 id="sharedTitle">6. 매 샷 공통 체크</h2><button type="button" class="small-btn" id="editSharedQuick">✎ 항목 편집</button></div><div class="items" id="shared">
+      <label class="check-item"><input type="checkbox" data-check-id="c1" aria-label="목표 거리와 방향 설정"><span class="item-name">목표 거리와 방향 설정</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="c2" aria-label="오른눈 어드레스와 가벼운 오른손 위크 그립"><span class="item-name">오른눈 어드레스와 가벼운 오른손 위크 그립</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="c3" aria-label="천천히 업라이트 백스윙"><span class="item-name">천천히 업라이트 백스윙</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="c4" aria-label="서두르지 않는 다운스윙"><span class="item-name">서두르지 않는 다운스윙</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="c5" aria-label="확실한 임팩트"><span class="item-name">확실한 임팩트</span></label>
+      <label class="check-item"><input type="checkbox" data-check-id="c6" aria-label="캐리와 방향 확인"><span class="item-name">캐리와 방향 확인</span></label>
+      </div>
+    </section>
+    <section class="card" aria-labelledby="notesTitle">
+      <div class="section-head"><h2 id="notesTitle">7. 오늘의 연습 기록</h2></div>
+      <div class="notes">
+        <div class="field"><label for="date">연습 날짜</label><input type="date" id="date"></div>
+        <div class="field"><label for="best">가장 잘 맞은 클럽</label><input type="text" id="best" placeholder="클럽 / 잘 맞은 이유" autocomplete="off"></div>
+        <div class="field"><label for="worst">가장 불안했던 클럽</label><input type="text" id="worst" placeholder="클럽 / 미스 유형" autocomplete="off"></div>
+        <div class="field"><label for="next">다음 연습 집중사항</label><textarea id="next" placeholder="다음에 집중할 스윙 포인트"></textarea></div>
+        <div class="actions"><button type="button" class="main-btn" id="saveSession">✓ 오늘 연습 기록 저장</button><button type="button" class="main-btn outline-btn" id="copySummary">기록 복사</button></div>
+        <button type="button" class="quick-backup" id="saveAndBackup">📁 오늘 기록 저장 + 핸드폰에 백업 파일 보관</button>
+        <p class="file-notice">기록 저장: 이 기기의 브라우저 내부 · 백업 보관: 아래 버튼에서 선택한 파일 앱/폴더</p>
+      </div>
+    </section>
+    <section class="card diary-card" aria-labelledby="historyTitle" id="practiceDiary">
+      <div class="section-head between"><div><h2 id="historyTitle">8. 날짜별 연습일기</h2><p class="diary-subtitle">저장 당시 클럽·목표·공 배분까지 한 화면에서 확인</p></div><span class="section-sub" id="historyCount">0건</span></div>
+      <div class="diary-totals"><div><span>저장한 연습</span><strong id="sessionTotal">0회</strong></div><div><span>누적 체크</span><strong id="ballTotal">0구</strong></div></div>
+      <div class="diary-tools">
+        <button type="button" class="small-btn" id="exportCsv">↓ 엑셀용 CSV</button>
+        <button type="button" class="small-btn" id="exportBackup">↓ 백업 다운로드</button>
+        <button type="button" class="small-btn" id="importBackup">↑ 백업 불러오기</button>
+        <input type="file" id="backupFile" accept=".json,application/json" class="visually-hidden" aria-label="연습일기 백업 파일 선택">
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </section>
+    <section class="card storage-card" id="deviceStorage" aria-labelledby="storageTitle">
+      <div class="section-head"><h2 id="storageTitle">9. 기기 저장 / 백업 위치 선택</h2><p class="diary-subtitle">인터넷 없이 사용 · 기록은 기기에 저장 · 백업 파일 보관 위치는 직접 선택</p></div>
+      <div class="storage-status" id="storageStatus" role="status"><strong>기기 저장 확인 중</strong>브라우저 저장 지원 여부를 확인합니다.</div>
+      <p class="backup-stamp" id="backupStamp">마지막 백업: 아직 없음</p>
+      <div class="storage-actions">
+        <button type="button" class="main-btn" id="saveLocation">📁 백업 저장 위치 선택</button>
+        <button type="button" class="main-btn outline-btn" id="saveDownload">↓ 백업 다운로드</button>
+        <button type="button" class="main-btn outline-btn" id="restoreFromFile">↑ 백업 불러오기</button>
+      </div>
+      <div class="storage-help">
+        <p id="locationSupport">저장 위치 선택은 기기/브라우저에서 지원하는 파일 저장 창 또는 공유 메뉴를 엽니다.</p>
+        <p><b>아이폰</b> · 공유 메뉴에서 <b>파일에 저장 → 나의 iPhone</b> 폴더 선택. iCloud Drive를 선택하면 클라우드에 저장됩니다.</p>
+        <p><b>안드로이드</b> · 파일 저장 창에서 <b>내부 저장소</b> 폴더 선택. 지원되지 않으면 다운로드 후 파일 앱에서 이동하세요.</p>
+        <p>기기 파일은 자동으로 덮어쓰지 않습니다. 연습 후 백업을 다시 실행해 최신 파일을 보관하세요. 기기 변경 시 JSON 백업을 불러오면 됩니다.</p>
+        <p><b>아이폰 데이터 보존</b> · Safari에서 오래 열지 않으면 브라우저가 저장 데이터를 지울 수 있습니다. Safari 공유 버튼 → <b>홈 화면에 추가</b>로 설치해 사용하고, 백업 파일을 정기적으로 보관하세요.</p>
+        <p><b>이전 버전에서 옮겨오기</b> · 예전에 HTML 파일로 열어 쓰던 기록은 이 웹 주소와 저장 공간이 다릅니다. 예전 파일에서 「백업 다운로드」 후, 여기서 「백업 불러오기」를 누르세요.</p>
+      </div>
+    </section>
+    <p class="info">데이터는 이 브라우저/파일의 저장 영역에 보관됩니다. 앱·브라우저 데이터 삭제, 시크릿 모드, 파일 위치 변경 시 사라질 수 있으므로 백업 파일을 별도 보관하세요.</p>
+    <footer class="site-footer" aria-label="제작자 및 저작권">
+      <span>Made by <strong>누렁띠</strong> · Dealbada</span>
+      <small>© 2026 누렁띠. All Rights Reserved.</small>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script>
+'use strict';
+// 매일매일 연습일기 v8 — 외부 라이브러리 없는 웹/오프라인 겸용 (GitHub Pages 배포판)
+const $=id=>document.getElementById(id);
+const LAST_BACKUP_KEY='golf_diary_last_backup_v1';
+const NOTICE_KEY='golf_diary_notice_dismissed_v1';
+const PLAN_BALL_LIMIT=2000;
+const CURRENT_KEY='golf_100_current_v1';
+const HISTORY_KEY='golf_100_history_v1';
+const FEEL_KEY='golf_100_swing_feels_v1';
+const FEEL_DEFAULT_KEY='golf_100_swing_defaults_v1';
+const BASE_KEY='golf_diary_default_routine_v2';
+const PREF_KEY='golf_diary_planner_pref_v2';
+const BASE_SHARED_KEY='golf_diary_shared_default_v1';
+const SECTIONS=[{key:'wedge',title:'웨지 / 어프로치'},{key:'iron',title:'아이언'},{key:'long',title:'유틸리티 / 우드 / 드라이버'},{key:'sim',title:'실전 시뮬레이션'}];
+const GOALS=['하프스윙','풀스윙','방향 집중','캐리 집중','방향과 캐리','정타 집중','목표거리','탑핑 방지','뒷땅 방지'];
+const IRONS=['PW','AW','SW','9','8','7','6','5','4','3','2'];
+const putting=[['p1','1m / 10개'],['p2','2m / 10개'],['p3','5~7m / 10개']];
+const builtInShared=[{id:'c1',text:'목표 거리와 방향 설정'},{id:'c2',text:'오른눈 어드레스와 가벼운 오른손 위크 그립'},{id:'c3',text:'천천히 업라이트 백스윙'},{id:'c4',text:'서두르지 않는 다운스윙'},{id:'c5',text:'확실한 임팩트'},{id:'c6',text:'캐리와 방향 확인'}];
+const builtInPlan=[
+ {key:'wedge',items:[
+  {id:'w1',loft:56,distance:10,balls:5},{id:'w2',loft:56,distance:20,balls:5},{id:'w3',loft:56,distance:30,balls:5},{id:'w4',loft:56,distance:50,balls:5},
+  {id:'w5',loft:50,distance:20,balls:5},{id:'w6',loft:50,distance:50,balls:5},{id:'w7',loft:50,distance:70,balls:5}]},
+ {key:'iron',items:[
+  {id:'i1',club:'PW',goal:'하프스윙',balls:5},{id:'i2',club:'PW',goal:'풀스윙',balls:5},
+  {id:'i3',club:'9',goal:'방향과 캐리',balls:5},{id:'i4',club:'7',goal:'정타 집중',balls:5},{id:'i5',club:'7',goal:'방향 집중',balls:5},
+  {id:'i6',club:'7',goal:'목표거리',balls:5},{id:'i7',club:'5',goal:'탑핑 방지',balls:5}]},
+ {key:'long',items:[
+  {id:'d1',clubType:'utility',number:'4',loft:'',focus:'정타와 방향',balls:10},
+  {id:'d2',clubType:'driver',number:'',loft:'',focus:'그립과 백스윙',balls:5},
+  {id:'d3',clubType:'driver',number:'',loft:'',focus:'다운스윙과 오른팔',balls:5},
+  {id:'d4',clubType:'driver',number:'',loft:'',focus:'목표 방향과 탄도',balls:5}]},
+ {key:'sim',items:[{id:'s1',focus:'드라이버 / 세컨드 / 어프로치, 매 샷 클럽 교체',balls:5}]}
+];
+const localDate=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
+const clone=x=>JSON.parse(JSON.stringify(x));
+const finiteNumber=x=>Number.isFinite(Number(x))&&String(x).trim()!=='';
+const countBall=item=>Math.max(0,Math.round(Number(item.balls)||0));
+const sumPlan=plan=>plan.reduce((n,s)=>n+s.items.reduce((x,it)=>x+countBall(it),0),0);
+const sumGroup=group=>group.items.reduce((n,i)=>n+countBall(i),0);
+const uid=()=>typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():'item-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+function loadJSON(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
+function toast(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),3300)}
+function make(tag,cls,value){const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=String(value);return el}
+// 브라우저 기본 confirm()을 대신하는 화면 안 확인창. iOS 파일 미리보기·인앱 브라우저에서도 동작.
+function askConfirm(message,{title='확인',okText='확인',cancelText='취소',danger=false}={}){
+ return new Promise(resolve=>{
+  const prevFocus=document.activeElement;
+  const backdrop=make('div','app-dialog-backdrop'),box=make('div','app-dialog');
+  box.setAttribute('role','alertdialog');box.setAttribute('aria-modal','true');
+  const h=make('h3','',title);h.id='appDialogTitle';const p=make('p','',message);p.id='appDialogText';
+  box.setAttribute('aria-labelledby','appDialogTitle');box.setAttribute('aria-describedby','appDialogText');
+  const actions=make('div','actions');
+  const ok=make('button','main-btn'+(danger?' danger':''),okText);ok.type='button';
+  const cancel=make('button','main-btn outline-btn',cancelText);cancel.type='button';
+  const close=value=>{document.removeEventListener('keydown',onKey);backdrop.remove();if(prevFocus&&prevFocus.focus)prevFocus.focus();resolve(value)};
+  const onKey=e=>{if(e.key==='Escape')close(false)};
+  ok.addEventListener('click',()=>close(true));cancel.addEventListener('click',()=>close(false));
+  backdrop.addEventListener('click',e=>{if(e.target===backdrop)close(false)});
+  document.addEventListener('keydown',onKey);
+  actions.append(ok,cancel);box.append(h,p,actions);backdrop.append(box);document.body.append(backdrop);ok.focus();
+ });
+}
+function cleanString(value,max=150){return typeof value==='string'?value.slice(0,max):''}
+function normalizedPlan(raw,fallback=builtInPlan){
+ if(!Array.isArray(raw))return clone(fallback);
+ try{
+  const found=new Set();let n=0;
+  const result=SECTIONS.map(sec=>{
+   const data=raw.find(s=>s&&s.key===sec.key);
+   const items=Array.isArray(data?.items)?data.items.slice(0,60):[];
+   return {key:sec.key,items:items.filter(it=>it&&typeof it==='object').map(it=>{
+    const id=cleanString(it.id,100)||uid();if(found.has(id))throw Error('duplicate');found.add(id);n++;
+    const balls=Math.max(0,Math.min(1000,Math.round(Number(it.balls)||0)));
+    if(sec.key==='wedge')return {id,loft:Number(it.loft),distance:Number(it.distance),balls};
+    if(sec.key==='iron')return {id,club:cleanString(it.club,10),goal:cleanString(it.goal,40),balls};
+    if(sec.key==='long')return {id,clubType:['utility','wood','driver'].includes(it.clubType)?it.clubType:'utility',number:cleanString(String(it.number??''),5),loft:cleanString(String(it.loft??''),12),focus:cleanString(it.focus,30),balls};
+    return {id,focus:cleanString(it.focus,100),balls};
+   })};
+  });
+  if(n===0||sumPlan(result)>PLAN_BALL_LIMIT)return clone(fallback);
+  return result;
+ }catch{return clone(fallback)}
+}
+function normalizedShared(raw,fallback=builtInShared){
+ if(!Array.isArray(raw))return clone(fallback);
+ const seen=new Set();
+ return raw.slice(0,60).filter(x=>x&&typeof x==='object').map(x=>({id:cleanString(x.id,100)||uid(),text:cleanString(x.text,120)})).filter(x=>{
+  if(!x.text.trim()||seen.has(x.id))return false;seen.add(x.id);return true;
+ });
+}
+function entryShared(entry){return normalizedShared(entry?.shared,builtInShared)}
+function planLabel(sec,item){
+ if(sec==='wedge')return `${item.loft}° · ${item.distance}m`;
+ if(sec==='iron')return `${/^\d+$/.test(item.club)?item.club+'번':item.club} · ${item.goal}`;
+ if(sec==='long'){
+  const typ=item.clubType==='wood'?'W':item.clubType==='utility'?'U':'';
+  const club=item.clubType==='driver'?'Driver':(item.number?item.number+typ:item.clubType==='wood'?'Wood':'Utility');
+  const loft=item.loft!==''&&item.loft!=null?' · '+item.loft+'°':'';
+  return `${club}${loft} · ${item.focus}`;
+ }
+ return item.focus;
+}
+function planSummary(plan){return plan.map(s=>`${SECTIONS.find(x=>x.key===s.key).title} ${sumGroup(s)}구`).join(' · ')}
+function entryPlan(entry){return normalizedPlan(entry?.plan,builtInPlan)}
+function entryTotal(entry){return entry&&Array.isArray(entry.plan)?sumPlan(entryPlan(entry)):100}
+function calculatedDone(checks,plan){return plan.reduce((n,s)=>n+s.items.reduce((v,it)=>v+(checks?.[it.id]?countBall(it):0),0),0)}
+function entryDone(e){return Number.isFinite(Number(e?.done))?Number(e.done):calculatedDone(e?.checks,entryPlan(e))}
+function capture(){return {...current,checks:{...current.checks},plan:clone(current.plan),shared:clone(current.shared),done:calculatedDone(current.checks,current.plan),total:sumPlan(current.plan)}}
+let basePlan=normalizedPlan(loadJSON(BASE_KEY,null));
+let baseShared=normalizedShared(loadJSON(BASE_SHARED_KEY,null));
+let rawCurrent=loadJSON(CURRENT_KEY,{});
+if(!rawCurrent||typeof rawCurrent!=='object'||Array.isArray(rawCurrent))rawCurrent={};
+let current={checks:rawCurrent.checks&&typeof rawCurrent.checks==='object'&&!Array.isArray(rawCurrent.checks)?{...rawCurrent.checks}:{},
+ plan:normalizedPlan(rawCurrent.plan,basePlan),shared:normalizedShared(rawCurrent.shared,baseShared),date:typeof rawCurrent.date==='string'?rawCurrent.date:localDate(),
+ best:cleanString(rawCurrent.best,500),worst:cleanString(rawCurrent.worst,500),next:cleanString(rawCurrent.next,3000)};
+let history=loadJSON(HISTORY_KEY,[]);
+if(!Array.isArray(history))history=[];
+history=history.filter(e=>e&&typeof e==='object'&&typeof e.date==='string');
+let preferences=loadJSON(PREF_KEY,{minutes:60,pace:45,focus:'none'});
+if(!preferences||typeof preferences!=='object')preferences={minutes:60,pace:45,focus:'none'};
+let storageIssue=false;
+function persist(){try{localStorage.setItem(CURRENT_KEY,JSON.stringify(current));return true}catch{if(!storageIssue){storageIssue=true;toast('이 환경에서는 자동 저장이 제한됩니다. JSON 백업을 사용하세요.')}return false}}
+function saveHistory(){try{localStorage.setItem(HISTORY_KEY,JSON.stringify(history));return true}catch{toast('기록 저장이 제한됩니다. JSON 백업을 이용하세요.');return false}}
+function saveBase(){try{localStorage.setItem(BASE_KEY,JSON.stringify(basePlan));localStorage.setItem(BASE_SHARED_KEY,JSON.stringify(baseShared));return true}catch{toast('기본 루틴 저장에 실패했습니다.');return false}}
+function showStorageStatus(){
+ let ok=false;try{const k='golf_diary_storage_test';localStorage.setItem(k,'1');ok=localStorage.getItem(k)==='1';localStorage.removeItem(k)}catch{}
+ const el=$('storageStatus');el.classList.toggle('warn',!ok);el.replaceChildren();
+ el.append(make('strong','',ok?'✓ 기기 내부 자동 저장 사용 가능':'⚠ 브라우저 내부 자동 저장 제한'),
+ document.createTextNode(ok?'체크 상태, 맞춤 기본 루틴, 오늘 계획, 날짜별 연습일기, 스윙 메모가 현재 브라우저 저장소에 보관됩니다. 지정 폴더에 자동 저장되지는 않습니다.':'이 환경에서는 저장이 제한될 수 있습니다. 저장 후 유지되는지 확인하고 JSON 백업을 보관하세요.'));
+ $('locationSupport').textContent=typeof window.showSaveFilePicker==='function'?'지원 브라우저에서 저장할 폴더와 파일 이름을 직접 선택할 수 있습니다.':
+ (navigator.share&&typeof navigator.canShare==='function'?'휴대폰 공유 메뉴에서 ‘파일에 저장’을 선택하세요. 공유 메뉴가 지원되지 않으면 다운로드 후 파일 앱으로 옮기세요.':'백업 다운로드 후 파일 앱에서 원하는 폴더로 옮겨주세요.');
+}
+function updateProgress(){
+ const total=sumPlan(current.plan),done=calculatedDone(current.checks,current.plan),pct=total?Math.round(done/total*100):0;
+ $('done').textContent=done;$('totalBalls').textContent=`/ ${total}구`;$('percent').textContent=pct+'%';
+ $('barFill').style.width=pct+'%';$('progressbar').setAttribute('aria-valuemax',String(total));$('progressbar').setAttribute('aria-valuenow',String(done));
+ $('completeMsg').textContent=total&&done===total?`✓ 오늘 연습 ${total}구 완료!`:'';
+ $('baseCount').textContent=sumPlan(basePlan)+'구';$('todayCount').textContent=total+'구';
+ current.plan.forEach((s,index)=>{
+  const value=calculatedDone(current.checks,[s]),t=sumGroup(s);
+  $('sectionCount'+index).textContent=value+' / '+t+'구';$('sectionFill'+index).style.width=t?(value/t*100)+'%':'0%';
+ });
+}
+function renderPlan(){
+ current.plan.forEach((s,index)=>{
+  const root=document.querySelector(`[data-section="${index}"] .items`);root.replaceChildren();
+  if(!s.items.length)root.append(make('p','edit-empty','설정된 항목이 없습니다. 위에서 오늘 계획을 편집하세요.'));
+  s.items.forEach(item=>{
+   const label=make('label','check-item');const cb=make('input');cb.type='checkbox';cb.dataset.checkId=item.id;
+   cb.checked=!!current.checks[item.id];cb.disabled=countBall(item)===0;cb.setAttribute('aria-label',`${planLabel(s.key,item)} ${countBall(item)}구`);
+   const title=make('span','item-name',planLabel(s.key,item));const balls=make('span','balls',countBall(item)+'구');
+   label.append(cb,title,balls);if(cb.disabled)label.setAttribute('aria-disabled','true');root.append(label);
+  });
+ });
+ updateProgress();
+}
+function renderShared(){
+ const root=$('shared');root.replaceChildren();
+ if(!current.shared.length)root.append(make('p','edit-empty','공통 체크 항목이 없습니다. 「항목 편집」에서 추가할 수 있어요.'));
+ current.shared.forEach(item=>{
+  const label=make('label','check-item'),cb=make('input');cb.type='checkbox';cb.dataset.checkId=item.id;
+  cb.checked=!!current.checks[item.id];cb.setAttribute('aria-label',item.text);
+  label.append(cb,make('span','item-name',item.text));root.append(label);
+ });
+}
+function syncForm(){
+ $('date').value=current.date||localDate();$('best').value=current.best||'';$('worst').value=current.worst||'';$('next').value=current.next||'';
+ renderPlan();
+ // 퍼팅과 사용자 편집 가능 공통 체크는 연습 계획과 별도로 저장하고 표시합니다.
+ renderShared();
+ document.querySelectorAll('#putting [data-check-id]').forEach(cb=>{cb.checked=!!current.checks[cb.dataset.checkId]});
+}
+function summarize(entry){
+ const plan=entryPlan(entry),done=entryDone(entry),total=entryTotal(entry),pct=total?Math.round(done/total*100):0;
+ const parts=['⛳ 매일매일 연습일기',`연습일: ${entry.date||'-'}`,`완료: ${done}/${total}구 (${pct}%)`];
+ plan.forEach(s=>{parts.push('\n'+SECTIONS.find(x=>x.key===s.key).title);s.items.forEach(it=>parts.push((entry.checks?.[it.id]?'☑ ':'☐ ')+planLabel(s.key,it)+' / '+it.balls+'구'))});
+ parts.push('\n퍼팅 (시간 별도)');putting.forEach(([id,name])=>parts.push((entry.checks?.[id]?'☑ ':'☐ ')+name));
+ parts.push('\n매 샷 공통 체크');entryShared(entry).forEach(({id,text})=>parts.push((entry.checks?.[id]?'☑ ':'☐ ')+text));
+ parts.push('\n가장 잘 맞은 클럽: '+(entry.best||'-'),'가장 불안했던 클럽: '+(entry.worst||'-'),'다음 연습 집중사항: '+(entry.next||'-'));
+ return parts.join('\n');
+}
+async function copyText(value){
+ try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);toast('기록을 복사했습니다.');return}
+ const el=make('textarea');el.value=value;el.style.position='fixed';el.style.opacity='0';document.body.append(el);el.select();const ok=document.execCommand('copy');el.remove();if(ok){toast('기록을 복사했습니다.');return}throw Error('unsupported')}
+ catch{toast('복사가 제한되어 별도 창으로 기록을 표시합니다.');const win=window.open('','_blank');if(win){const pre=make('pre','',value);pre.style.whiteSpace='pre-wrap';win.document.body.append(pre)}}
+}
+function weekdayOf(isoDate){if(!/^\d{4}-\d{2}-\d{2}$/.test(isoDate||''))return '';const d=new Date(isoDate+'T12:00:00');return Number.isNaN(d.getTime())?'':['일','월','화','수','목','금','토'][d.getDay()]+'요일'}
+function renderHistory(){
+ renderNotices();
+ const list=$('historyList');list.replaceChildren();
+ const sorted=[...history].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||String(b.savedAt||'').localeCompare(String(a.savedAt||'')));
+ $('historyCount').textContent=sorted.length+'건';$('sessionTotal').textContent=sorted.length+'회';
+ $('ballTotal').textContent=sorted.reduce((n,e)=>n+entryDone(e),0).toLocaleString('ko-KR')+'구';
+ if(!sorted.length){list.append(make('p','empty','아직 저장된 기록이 없습니다. 연습 후 위의 저장 버튼을 눌러주세요.'));return}
+ for(const entry of sorted){
+  const plan=entryPlan(entry),total=entryTotal(entry),done=entryDone(entry);
+  const article=make('article','history-entry'),title=make('div','history-title');
+  const date=make('span','history-date',entry.date||'날짜 미지정');date.append(make('span','weekday',' '+weekdayOf(entry.date)));
+  title.append(date,make('span','history-balls',done+' / '+total+'구'));
+  const fields=make('div','diary-fields');
+  [['가장 잘 맞은 클럽',entry.best],['가장 불안했던 클럽',entry.worst],['다음 연습 집중사항',entry.next]].forEach(([name,value])=>{
+   const line=make('div','diary-field');line.append(make('span','diary-label',name),make('span','diary-value'+(!value?' missing':''),value||'—'));fields.append(line);
+  });
+  const details=make('details','history-plan');details.append(make('summary','','당시 연습 구성 · '+planSummary(plan)));
+  const ul=make('ul');plan.forEach(s=>s.items.forEach(it=>{
+   const li=make('li'),name=make('span',entry.checks?.[it.id]?'checked':'',(entry.checks?.[it.id]?'✓ ':'○ ')+planLabel(s.key,it));
+   li.append(name,make('span','',it.balls+'구'));ul.append(li);
+  }));
+  const sharedAtTime=entryShared(entry);
+  if(sharedAtTime.length){ul.append(make('li','history-shared-label','매 샷 공통 체크'));
+   sharedAtTime.forEach(it=>{const li=make('li'),name=make('span',entry.checks?.[it.id]?'checked':'',(entry.checks?.[it.id]?'✓ ':'○ ')+it.text);li.append(name);ul.append(li)});
+  }
+  details.append(ul);
+  const ctr=make('div','history-ctrl');
+  const edit=make('button','','불러와 수정');edit.type='button';edit.addEventListener('click',async()=>{
+   if(!(await askConfirm(`${entry.date} 기록을 불러올까요?\n현재 작성 중인 계획과 체크·메모가 대체됩니다.\n기본 루틴은 바뀌지 않습니다.`,{title:'기록 불러오기',okText:'불러오기'})))return;
+   current={checks:{...(entry.checks||{})},plan:clone(plan),shared:entryShared(entry),date:entry.date||localDate(),best:entry.best||'',worst:entry.worst||'',next:entry.next||''};
+   persist();syncForm();clearSuggestion();$('notesTitle').scrollIntoView({behavior:'smooth',block:'start'});toast('저장 당시의 연습 계획까지 불러왔습니다.');
+  });
+  const copy=make('button','','기록 복사');copy.type='button';copy.addEventListener('click',()=>copyText(summarize(entry)));
+  const remove=make('button','','삭제');remove.type='button';remove.addEventListener('click',()=>{
+   const prior=article.querySelector('.history-delete-confirm');if(prior){prior.remove();return}
+   const prompt=make('div','history-delete-confirm');prompt.setAttribute('role','group');
+   prompt.append(make('span','',`${entry.date} 기록을 영구 삭제할까요?`));
+   const buttons=make('div','edit-delete-actions');
+   const cancel=make('button','delete-cancel','취소');cancel.type='button';cancel.addEventListener('click',()=>prompt.remove());
+   const yes=make('button','delete-yes','삭제 확인');yes.type='button';yes.addEventListener('click',()=>{
+    const next=history.filter(e=>e!==entry);
+    try{localStorage.setItem(HISTORY_KEY,JSON.stringify(next));history=next;renderHistory();toast(`${entry.date} 연습 기록을 삭제했습니다.`)}
+    catch{toast('삭제 사항 저장에 실패했습니다.')}
+   });buttons.append(cancel,yes);prompt.append(buttons);article.append(prompt);
+   toast('기록을 삭제하려면 카드 아래 「삭제 확인」을 누르세요.');
+  });
+  ctr.append(edit,copy,remove);article.append(title,fields,details,ctr);list.append(article);
+ }
+}
+function csvCell(value){return '"'+String(value??'').replace(/"/g,'""')+'"'}
+function downloadFile(content,filename,mime){const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob);const a=make('a');a.href=url;a.download=filename;a.style.display='none';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),20000)}
+function exportCSV(){
+ if(!history.length){toast('내보낼 연습 기록이 없습니다.');return}
+ const data=[['날짜','완료 구수','계획 구수','진행률(%)','가장 잘 맞은 클럽','가장 불안했던 클럽','다음 연습 집중사항','당시 항목별 연습 구성','기록 저장 시각']];
+ [...history].sort((a,b)=>String(a.date).localeCompare(String(b.date))).forEach(e=>{
+  const p=entryPlan(e),total=entryTotal(e),done=entryDone(e),detail=p.flatMap(s=>s.items.map(it=>`${planLabel(s.key,it)} ${it.balls}구 ${e.checks?.[it.id]?'완료':'미완료'}`)).join(' / ');
+  data.push([e.date||'',done,total,total?Math.round(done/total*100):0,e.best||'',e.worst||'',e.next||'',detail,e.savedAt||'']);
+ });
+ downloadFile('\uFEFF'+data.map(row=>row.map(csvCell).join(',')).join('\r\n'),'매일매일_연습일기_'+localDate()+'.csv','text/csv;charset=utf-8');toast('CSV 다운로드를 요청했습니다.');
+}
+function makeBackup(){
+ const bundle={type:'golf-practice-diary',version:6,exportedAt:new Date().toISOString(),history:history.map(e=>({...e,plan:entryPlan(e),shared:entryShared(e),total:entryTotal(e)})),current:capture(),defaultRoutine:clone(basePlan),defaultShared:clone(baseShared),swingFeel:feelNotes,swingDefaults:feelUserDefaults,plannerPreferences:preferences};
+ return {filename:'매일매일_연습일기_백업_'+localDate()+'.json',content:JSON.stringify(bundle,null,2),mime:'application/json;charset=utf-8'};
+}
+function exportJSON(){const d=makeBackup();downloadFile(d.content,d.filename,d.mime);markBackup();toast('JSON 백업 다운로드를 요청했습니다. 저장 위치를 확인하세요.')}
+// v8: 마지막 백업 시점 기록과 안내 배너(이전 기록 옮기기 · 홈 화면 설치 · 백업 권유)
+function markBackup(){try{localStorage.setItem(LAST_BACKUP_KEY,new Date().toISOString())}catch{}renderNotices()}
+function lastBackupTime(){try{const t=Date.parse(localStorage.getItem(LAST_BACKUP_KEY)||'');return Number.isFinite(t)?t:null}catch{return null}}
+function daysSince(t){return Math.floor((Date.now()-t)/86400000)}
+function dismissedNotices(){const v=loadJSON(NOTICE_KEY,{});return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}
+function dismissNotice(key){const v=dismissedNotices();v[key]=new Date().toISOString();try{localStorage.setItem(NOTICE_KEY,JSON.stringify(v))}catch{}renderNotices()}
+function noticeHidden(key,days){const t=Date.parse(dismissedNotices()[key]||'');return Number.isFinite(t)&&(days==null||daysSince(t)<days)}
+const isWebOrigin=/^https?:$/.test(location.protocol);
+const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isStandalone=()=>navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+function renderBackupStamp(){
+ const el=$('backupStamp');if(!el)return;const t=lastBackupTime();
+ if(t===null){el.textContent=history.length?'마지막 백업: 아직 없음 — 백업 파일을 보관해 두세요.':'마지막 백업: 아직 없음';el.classList.toggle('stale',history.length>0);return}
+ const days=daysSince(t);el.textContent=`마지막 백업: ${new Date(t).toLocaleDateString('ko-KR')} (${days===0?'오늘':days+'일 전'})`;el.classList.toggle('stale',days>=7&&history.length>0);
+}
+function renderNotices(){
+ renderBackupStamp();
+ const root=$('appNotices');if(!root)return;root.replaceChildren();
+ const add=(cls,title,body,buttons)=>{const box=make('div','notice'+(cls?' '+cls:''));box.append(make('strong','',title),document.createTextNode(body));
+  const row=make('div','notice-actions');buttons.forEach(([label,fn])=>{const b=make('button','small-btn',label);b.type='button';b.addEventListener('click',fn);row.append(b)});box.append(row);root.append(box)};
+ if(isWebOrigin&&!history.length&&!noticeHidden('migrate'))
+  add('','📦 예전 파일 버전의 기록이 있나요?','HTML 파일로 열어 쓰던 기록은 이 웹 주소에 자동으로 옮겨지지 않습니다. 예전 파일에서 「백업 다운로드」로 받은 JSON을 불러오세요.',
+   [['↑ 백업 불러오기',()=>$('backupFile').click()],['처음 사용해요',()=>dismissNotice('migrate')]]);
+ if(isWebOrigin&&isIOS&&!isStandalone()&&!noticeHidden('install',14))
+  add('','📲 홈 화면에 추가해서 쓰세요','아이폰 Safari는 오래 열지 않은 사이트의 저장 데이터를 지울 수 있습니다. 공유 버튼(□↑) → 「홈 화면에 추가」로 설치하면 앱처럼 열리고 기록 보존에 유리합니다.',
+   [['확인했어요',()=>dismissNotice('install')]]);
+ const t=lastBackupTime();
+ if(history.length&&(t===null||daysSince(t)>=7)&&!noticeHidden('backup',3))
+  add('warn',t===null?'💾 백업 파일을 보관하세요':'💾 백업한 지 오래됐어요',t===null?'아직 백업 파일이 없습니다. 휴대폰 변경·브라우저 데이터 삭제에 대비해 백업 파일을 보관하세요.':`마지막 백업 후 ${daysSince(t)}일이 지났습니다. 최신 기록을 백업 파일로 보관하세요.`,
+   [['📁 지금 백업',()=>saveBackupToLocation()],['나중에',()=>dismissNotice('backup')]]);
+}
+async function saveBackupToLocation(){
+ const d=makeBackup(),blob=new Blob([d.content],{type:d.mime});
+ try{
+  if(typeof window.showSaveFilePicker==='function'){
+   const h=await window.showSaveFilePicker({suggestedName:d.filename,types:[{description:'연습일기 백업(JSON)',accept:{'application/json':['.json']}}]});
+   const writer=await h.createWritable();await writer.write(blob);await writer.close();markBackup();toast('선택한 위치에 백업 파일을 저장했습니다.');return;
+  }
+  if(navigator.share&&typeof navigator.canShare==='function'&&typeof File==='function'){
+   const file=new File([blob],d.filename,{type:'application/json'});
+   if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'매일매일 연습일기 · 백업'});markBackup();toast('공유 메뉴를 닫았습니다. 파일 앱에 저장했는지 확인하세요.');return}
+  }
+  downloadFile(d.content,d.filename,d.mime);markBackup();toast('브라우저 다운로드로 저장했습니다. 파일 앱에서 위치를 확인하세요.');
+ }catch(error){
+  if(error?.name==='AbortError'){toast('파일 저장을 취소했습니다.');return}
+  try{downloadFile(d.content,d.filename,d.mime);markBackup();toast('파일 저장 창을 사용할 수 없어 다운로드했습니다.')}catch{toast('백업이 실패했습니다. 다른 브라우저에서 시도하세요.')}
+ }
+}
+async function importJSON(file){
+ if(!file)return;
+ try{
+  const data=JSON.parse(await file.text());
+  if(data.type!=='golf-practice-diary'||!Array.isArray(data.history))throw Error('backup');
+  const incoming=data.history.filter(e=>e&&typeof e==='object'&&typeof e.date==='string');
+  const hasBase=Array.isArray(data.defaultRoutine);const hasSharedBase=Array.isArray(data.defaultShared);const hasCurrent=data.current&&typeof data.current==='object'&&!Array.isArray(data.current);
+  if(!(await askConfirm(`백업 기록 ${incoming.length}건을 가져올까요?\n같은 날짜의 기존 기록은 유지하고 새로운 날짜만 추가합니다.\n${hasBase?'백업의 기본 루틴도 복원합니다.\n':''}${hasCurrent?'작성 중인 오늘 계획과 메모는 백업 내용으로 변경됩니다.\n':''}수정된 스윙 메모와 개인 기본 문구도 복원됩니다.`,{title:'백업 불러오기',okText:'불러오기'})))return;
+  const dates=new Set(history.map(e=>e.date));let added=0;const merged=[...history];
+  incoming.forEach(e=>{if(!dates.has(e.date)){merged.push({...e,id:e.id||uid(),plan:entryPlan(e),shared:entryShared(e),total:entryTotal(e),done:entryDone(e)});dates.add(e.date);added++}});
+  const incomingBase=hasBase?normalizedPlan(data.defaultRoutine,basePlan):basePlan;
+  const incomingBaseShared=hasSharedBase?normalizedShared(data.defaultShared,baseShared):baseShared;
+  let incomingCurrent=current;
+  if(hasCurrent){const r=data.current;incomingCurrent={checks:r.checks&&typeof r.checks==='object'&&!Array.isArray(r.checks)?{...r.checks}:{},
+   plan:normalizedPlan(r.plan,hasBase?incomingBase:builtInPlan),shared:normalizedShared(r.shared,hasSharedBase?incomingBaseShared:builtInShared),date:typeof r.date==='string'?r.date:localDate(),best:cleanString(r.best,500),worst:cleanString(r.worst,500),next:cleanString(r.next,3000)};}
+  const validFeelObj=x=>x&&typeof x==='object'&&!Array.isArray(x);
+  // 메모는 기존 v4 백업 형식도 지원합니다.
+  const newFeels=validFeelObj(data.swingFeel)?data.swingFeel:null;
+  const newDefaults=validFeelObj(data.swingDefaults)?data.swingDefaults:null;
+  // 모든 값을 먼저 준비한 뒤 한 번에 기록합니다. 중간에 실패하면 기존 값으로 모두 되돌립니다.
+  const writes=[[HISTORY_KEY,merged]];
+  if(hasBase)writes.push([BASE_KEY,incomingBase]);
+  if(hasSharedBase)writes.push([BASE_SHARED_KEY,incomingBaseShared]);
+  if(hasCurrent)writes.push([CURRENT_KEY,incomingCurrent]);
+  if(newFeels)writes.push([FEEL_KEY,newFeels]);
+  if(newDefaults)writes.push([FEEL_DEFAULT_KEY,newDefaults]);
+  if(validFeelObj(data.plannerPreferences))writes.push([PREF_KEY,data.plannerPreferences]);
+  const serialized=writes.map(([key,value])=>[key,JSON.stringify(value)]);
+  const previous=serialized.map(([key])=>[key,localStorage.getItem(key)]);
+  try{serialized.forEach(([key,text])=>localStorage.setItem(key,text))}
+  catch(writeError){
+   previous.forEach(([key,old])=>{try{old===null?localStorage.removeItem(key):localStorage.setItem(key,old)}catch{}});
+   toast('기기 저장 공간이 부족해 복원을 취소했습니다. 기존 기록은 그대로입니다.');console.error('backup import write:',writeError);return;
+  }
+  history=merged;basePlan=incomingBase;baseShared=incomingBaseShared;current=incomingCurrent;
+  if(newFeels)feelNotes=newFeels;if(newDefaults)feelUserDefaults=newDefaults;
+  if(validFeelObj(data.plannerPreferences))preferences=data.plannerPreferences;
+  feelKinds.forEach(renderFeel);syncForm();renderHistory();restorePlannerPreferences();clearSuggestion();closeEditor();
+  toast(`새로운 날짜 ${added}건을 불러왔습니다. (${data.version||'이전'} 버전 호환)`);
+ }catch(err){toast('백업 복원에 실패했습니다. 올바른 JSON 파일인지 확인하세요.');console.error('backup import:',err)}
+}
+// 아래 블록은 이전 배포판의 스윙 메모 편집/기본값 저장 로직을 유지합니다.
+    // 처음 내장된 메모를 기본값으로 보관하고, 사용자가 저장한 값이 있으면 교체합니다.
+    // 스윙 메모 저장소는 날짜별 연습일기 및 '새 연습 시작'과 독립적입니다.
+    const feelKinds=['driver','iron'];
+    const feelDefaults={};
+    for(const kind of feelKinds){
+      const root=$(kind+'-feel');
+      const details=[...root.querySelectorAll('.feel-steps li')].map(li=>{
+        const strong=li.querySelector('strong');
+        if(!strong)return li.textContent.trim();
+        const content=[...li.childNodes].filter(n=>n!==strong).map(n=>n.textContent).join('').trim();
+        return strong.textContent.trim()+' — '+content;
+      });
+      feelDefaults[kind]={
+        summary:$(kind+'-feel-hint').textContent.trim(),
+        details:details.join('\n'),
+        remember:$(kind+'-feel-remember').textContent.replace(/^기억할 감각\s*·\s*/,'').trim()
+      };
+    }
+    let feelNotes=loadJSON(FEEL_KEY,{});
+    if(!feelNotes||typeof feelNotes!=='object'||Array.isArray(feelNotes))feelNotes={};
+    let feelUserDefaults=loadJSON(FEEL_DEFAULT_KEY,{});
+    if(!feelUserDefaults||typeof feelUserDefaults!=='object'||Array.isArray(feelUserDefaults))feelUserDefaults={};
+    function getFeel(kind){
+      const stored=feelNotes[kind];const defaults=feelDefaults[kind];
+      const result={...defaults};
+      if(stored&&typeof stored==='object'){
+        for(const key of ['summary','details','remember'])if(typeof stored[key]==='string')result[key]=stored[key];
+      }
+      return result;
+    }
+    function renderFeel(kind){
+      const note=getFeel(kind);
+      $(kind+'-feel-hint').textContent=note.summary.trim()||'핵심 요약을 입력하세요';
+      const list=$(kind+'-feel-steps');list.replaceChildren();
+      const lines=note.details.split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
+      for(const line of lines){
+        const li=document.createElement('li');
+        const match=line.match(/^(\d{1,2}\s*·[^—]{1,70})\s+—\s+(.+)$/);
+        if(match){const label=document.createElement('strong');label.textContent=match[1];li.append(label,document.createTextNode(match[2]));}
+        else li.textContent=line;
+        list.append(li);
+      }
+      if(!lines.length){const li=document.createElement('li');li.textContent='스윙 메모가 없습니다.';list.append(li)}
+      $(kind+'-feel-remember').textContent='기억할 감각 · '+(note.remember.trim()||'—');
+      $(kind+'-feel-default-status').textContent=Object.prototype.hasOwnProperty.call(feelUserDefaults,kind)
+        ? '복원 기준: 내가 설정한 기본 문구'
+        : '복원 기준: 최초 제공된 제작자 예시 문구';
+    }
+    function toggleFeelEditor(kind,editing){
+      $(kind+'-feel-view').hidden=editing;
+      $(kind+'-feel-editor').hidden=!editing;
+      if(editing){
+        const note=getFeel(kind);
+        $(kind+'-feel-summary-edit').value=note.summary;
+        $(kind+'-feel-details-edit').value=note.details;
+        $(kind+'-feel-remember-edit').value=note.remember;
+      }
+    }
+    function storeFeelNotes(next,message){
+      try{localStorage.setItem(FEEL_KEY,JSON.stringify(next));feelNotes=next;feelKinds.forEach(renderFeel);toast(message);return true}
+      catch{toast('이 브라우저에서는 스윙 메모 저장이 제한됩니다.');return false}
+    }
+    function storeFeelUserDefaults(next,message){
+      try{localStorage.setItem(FEEL_DEFAULT_KEY,JSON.stringify(next));feelUserDefaults=next;feelKinds.forEach(renderFeel);toast(message);return true}
+      catch{toast('이 브라우저에서는 기본 문구 저장이 제한됩니다.');return false}
+    }
+    function feelFromEditor(kind){
+      return {
+        summary:$(kind+'-feel-summary-edit').value.trim(),
+        details:$(kind+'-feel-details-edit').value.trim(),
+        remember:$(kind+'-feel-remember-edit').value.trim()
+      };
+    }
+    feelKinds.forEach(kind=>{
+      renderFeel(kind);
+      document.querySelector('[data-feel-edit="'+kind+'"]').addEventListener('click',()=>toggleFeelEditor(kind,true));
+      document.querySelector('[data-feel-cancel="'+kind+'"]').addEventListener('click',()=>toggleFeelEditor(kind,false));
+      document.querySelector('[data-feel-save="'+kind+'"]').addEventListener('click',()=>{
+        const updated=feelFromEditor(kind);
+        if(storeFeelNotes({...feelNotes,[kind]:updated},'스윙 감각 메모를 저장했습니다.'))toggleFeelEditor(kind,false);
+      });
+      document.querySelector('[data-feel-save-default="'+kind+'"]').addEventListener('click',()=>{
+        const updated=feelFromEditor(kind);
+        if(!storeFeelNotes({...feelNotes,[kind]:updated},'스윙 감각 메모를 저장했습니다.'))return;
+        if(storeFeelUserDefaults({...feelUserDefaults,[kind]:{...updated}},'메모를 저장하고 내 기본 문구로 설정했습니다.'))toggleFeelEditor(kind,false);
+      });
+      document.querySelector('[data-feel-set-default="'+kind+'"]').addEventListener('click',async()=>{
+        if(!(await askConfirm('현재 메모를 이 클럽의 내 기본 문구로 설정할까요?\n이후 기본 문구 복원을 누르면 지금 내용으로 돌아옵니다.',{title:'내 기본 문구 설정',okText:'설정'})))return;
+        storeFeelUserDefaults({...feelUserDefaults,[kind]:{...getFeel(kind)}},'현재 메모를 내 기본 문구로 설정했습니다.');
+      });
+      document.querySelector('[data-feel-restore="'+kind+'"]').addEventListener('click',async()=>{
+        const hasMine=Object.prototype.hasOwnProperty.call(feelUserDefaults,kind);
+        if(!(await askConfirm((hasMine?'내가 저장한 기본 문구':'최초 제공된 제작자 예시 문구')+'로 복원할까요?\n현재 수정한 메모는 덮어쓰며, 저장한 다른 날짜의 연습 기록은 유지됩니다.',{title:'기본 문구 복원',okText:'복원'})))return;
+        const next={...feelNotes};
+        if(hasMine)next[kind]={...feelUserDefaults[kind]};
+        else delete next[kind];
+        if(storeFeelNotes(next,'기본 문구로 복원했습니다.'))toggleFeelEditor(kind,false);
+      });
+      document.querySelector('[data-feel-example="'+kind+'"]').addEventListener('click',async()=>{
+        if(!(await askConfirm('제작자가 제공한 예시 문구로 되돌릴까요?\n현재 메모는 덮어쓰지만, 내가 설정한 기본 문구는 유지됩니다.',{title:'제작자 예시로 되돌리기',okText:'되돌리기'})))return;
+        const next={...feelNotes};delete next[kind];
+        if(storeFeelNotes(next,'제작자 예시 문구로 되돌렸습니다.'))toggleFeelEditor(kind,false);
+      });
+    });
+
+
+
+// 루틴 편집: 기본 루틴과 오늘의 계획을 별도 관리
+let editorMode=null,draftPlan=null,draftShared=null,undoEdit=null;
+function closeEditor(){$('routineEditor').hidden=true;editorMode=null;draftPlan=null;draftShared=null;clearEditorFeedback()}
+function clearSuggestion(){$('allocationResult').hidden=true;suggestion=null;}
+function openEditor(mode){
+ editorMode=mode;draftPlan=clone(mode==='base'?basePlan:current.plan);draftShared=clone(mode==='base'?baseShared:current.shared);clearEditorFeedback();
+ $('routineEditor').hidden=false;$('editorTitle').textContent=mode==='base'?'나의 기본 루틴 편집':'오늘의 연습 계획 편집';
+ $('editorHint').textContent=mode==='base'?'클럽 연습과 매 샷 공통 체크까지 기본값으로 저장합니다. 오늘 계획은 유지됩니다.':'오늘 연습의 클럽·공 개수·집중 항목·매 샷 공통 체크를 편집합니다. 기본 루틴과 과거 기록은 유지됩니다.';
+ $('restoreExample').hidden=mode!=='base';renderEditor();$('routineEditor').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function clearEditorFeedback(){undoEdit=null;const el=$('editorFeedback');if(el)el.hidden=true;const u=$('undoEditorDelete');if(u)u.hidden=true;}
+function showEditorFeedback(message,undo=null){
+ undoEdit=undo;$('editorFeedbackText').textContent=message;
+ $('editorFeedback').hidden=false;$('undoEditorDelete').hidden=!undo;
+ toast(message);
+}
+$('undoEditorDelete').addEventListener('click',()=>{if(!undoEdit)return;const fn=undoEdit;clearEditorFeedback();fn();showEditorFeedback('삭제한 항목을 복원했습니다. 저장하면 적용됩니다.');});
+function inputControl(group,index,item,key,label,type='text',options=null,extra={}){
+ const field=make('div','field'+(extra.wide?' focus-field':'')),caption=make('label','',label),ctrl=make(options?'select':'input');
+ if(options){options.forEach(([value,title])=>{const opt=make('option','',title);opt.value=value;ctrl.append(opt)})}
+ else{ctrl.type=type;if(type==='number')ctrl.inputMode='decimal';if(extra.placeholder)ctrl.placeholder=extra.placeholder;if(extra.maxlength)ctrl.maxLength=extra.maxlength;
+  if(extra.min!=null)ctrl.min=String(extra.min);if(extra.max!=null)ctrl.max=String(extra.max);if(extra.step!=null)ctrl.step=String(extra.step);}
+ ctrl.value=item[key]??'';caption.append(ctrl);field.append(caption);
+ ctrl.addEventListener('input',()=>{item[key]=ctrl.value;const count=field.querySelector('.limit');if(count)count.textContent=ctrl.value.length+' / '+(extra.maxlength||30);$('editorBallTotal').textContent=sumPlan(draftPlan)+'구';});
+ if(extra.maxlength){field.append(make('span','edit-hint limit',String(ctrl.value).length+' / '+extra.maxlength))}
+ return field;
+}
+function renderEditor(){
+ if(!draftPlan)return;
+ const root=$('editorSections');root.replaceChildren();$('editorBallTotal').textContent=sumPlan(draftPlan)+'구';
+ draftPlan.forEach((group,g)=>{
+  const meta=SECTIONS[g],panel=make('div','editor-group');const header=make('div','editor-group-header');
+  header.append(make('strong','',`${g+1}. ${meta.title}`));
+  const add=make('button','small-btn','＋ 항목 추가');add.type='button';add.addEventListener('click',()=>{
+   if(group.items.length>=60){toast('한 분야에는 최대 60개 항목을 등록할 수 있습니다.');return}
+   const id=uid();let item;
+   if(meta.key==='wedge')item={id,loft:56,distance:30,balls:5};
+   else if(meta.key==='iron')item={id,club:'7',goal:'정타 집중',balls:5};
+   else if(meta.key==='long')item={id,clubType:'utility',number:'4',loft:'',focus:'정타 집중',balls:5};
+   else item={id,focus:'실전 상황 반복',balls:5};
+   group.items.push(item);renderEditor();showEditorFeedback(`${meta.title} 항목을 추가했습니다. 「수정 내용 저장」을 눌러 적용하세요.`);
+  });header.append(add);panel.append(header);
+  if(!group.items.length)panel.append(make('p','edit-empty','등록된 항목이 없습니다. 「항목 추가」를 눌러주세요.'));
+  group.items.forEach((item,i)=>{
+   const box=make('div','edit-item'),top=make('div','row-title'),buttons=make('div','row-buttons');
+   top.append(make('b','',`항목 ${i+1}`));
+   [['↑',-1,'앞으로 이동'],['↓',1,'뒤로 이동']].forEach(([symbol,delta,title])=>{
+    const b=make('button','',symbol);b.type='button';b.title=title;b.disabled=i+delta<0||i+delta>=group.items.length;
+    b.addEventListener('click',()=>{[group.items[i],group.items[i+delta]]=[group.items[i+delta],group.items[i]];clearEditorFeedback();renderEditor()});buttons.append(b);
+   });
+   const del=make('button','delete','삭제');del.type='button';del.setAttribute('aria-label',`항목 ${i+1} 삭제`);
+   del.addEventListener('click',()=>{
+    // iOS Edge의 기본 confirm()/중첩 확인 단계에 의존하지 않는 단일 탭 삭제.
+    // 아직 임시 편집 목록에서만 제거하며, 저장 전까지 언제든 취소할 수 있습니다.
+    const removed=group.items.splice(i,1)[0];renderEditor();
+    showEditorFeedback(`${meta.title} 항목을 제거했습니다. 「삭제 취소」로 복원할 수 있습니다.`,()=>{
+      group.items.splice(Math.min(i,group.items.length),0,removed);renderEditor();
+    });
+   });buttons.append(del);top.append(buttons);box.append(top);
+   const fields=make('div','edit-fields');
+   if(meta.key==='wedge'){
+    fields.append(inputControl(group,i,item,'loft','로프트 (°)','number',null,{min:0,max:80,step:0.5}),inputControl(group,i,item,'distance','목표 거리 (m)','number',null,{min:0,max:300,step:1}),inputControl(group,i,item,'balls','공 개수','number',null,{min:1,max:1000,step:1}));
+   }else if(meta.key==='iron'){
+    fields.append(inputControl(group,i,item,'club','아이언 종류','text',IRONS.map(x=>[x,/^\d+$/.test(x)?x+'번 아이언':x])),inputControl(group,i,item,'goal','집중 목표','text',GOALS.map(x=>[x,x])),inputControl(group,i,item,'balls','공 개수','number',null,{min:1,max:1000,step:1}));
+   }else if(meta.key==='long'){
+    fields.append(inputControl(group,i,item,'clubType','클럽 종류','text',[['utility','유틸리티'],['wood','우드'],['driver','드라이버']]));
+    fields.append(inputControl(group,i,item,'number','번호 (선택)','number',null,{min:1,max:15,step:1,placeholder:'예: 4'}),inputControl(group,i,item,'loft','로프트 ° (선택)','number',null,{min:0,max:60,step:0.5,placeholder:'예: 21'}));
+    fields.append(inputControl(group,i,item,'focus','집중할 포인트','text',null,{wide:true,maxlength:30,placeholder:'예: 정타와 목표 방향'}),inputControl(group,i,item,'balls','공 개수','number',null,{min:1,max:1000,step:1}));
+   }else{
+    fields.classList.add('two');fields.append(inputControl(group,i,item,'focus','실전 연습 내용','text',null,{wide:true,maxlength:100,placeholder:'클럽 교체 및 실전 상황'}),inputControl(group,i,item,'balls','공 개수','number',null,{min:1,max:1000,step:1}));
+   }
+   box.append(fields);panel.append(box);
+  });root.append(panel);
+ });
+ // 별도 타수가 없는 공통 체크는 100구 진행률에 영향을 주지 않습니다.
+ const group={items:draftShared},panel=make('div','editor-group');panel.id='sharedEditorGroup';
+ const header=make('div','editor-group-header');header.append(make('strong','','5. 매 샷 공통 체크 · 편집 가능'));
+ const add=make('button','small-btn','＋ 항목 추가');add.type='button';add.addEventListener('click',()=>{
+  if(draftShared.length>=60){showEditorFeedback('매 샷 공통 체크는 최대 60개까지 추가할 수 있습니다.');return}
+  draftShared.push({id:uid(),text:'새로운 스윙 체크 포인트'});renderEditor();
+  showEditorFeedback('매 샷 공통 체크 항목을 추가했습니다. 문구를 수정하고 저장하세요.');
+ });header.append(add);panel.append(header);
+ panel.append(make('p','edit-shared-help','공통 체크는 공 개수에 포함하지 않습니다. 텍스트를 직접 편집하거나 순서를 변경할 수 있습니다.'));
+ if(!draftShared.length)panel.append(make('p','edit-empty','공통 체크 항목이 없습니다. 「항목 추가」를 눌러주세요.'));
+ draftShared.forEach((item,i)=>{
+  const box=make('div','edit-item'),top=make('div','row-title'),buttons=make('div','row-buttons');
+  top.append(make('b','',`항목 ${i+1}`));
+  [['↑',-1,'앞으로 이동'],['↓',1,'뒤로 이동']].forEach(([symbol,delta,title])=>{
+   const btn=make('button','',symbol);btn.type='button';btn.title=title;btn.disabled=i+delta<0||i+delta>=draftShared.length;
+   btn.addEventListener('click',()=>{[draftShared[i],draftShared[i+delta]]=[draftShared[i+delta],draftShared[i]];clearEditorFeedback();renderEditor();showEditorFeedback('매 샷 공통 체크 순서를 변경했습니다.');});buttons.append(btn);
+  });
+  const del=make('button','delete','삭제');del.type='button';del.setAttribute('aria-label',`매 샷 공통 체크 ${i+1} 삭제`);
+  del.addEventListener('click',()=>{
+   const removed=draftShared.splice(i,1)[0];renderEditor();
+   showEditorFeedback('매 샷 공통 체크 항목을 제거했습니다. 「삭제 취소」로 복원할 수 있습니다.',()=>{draftShared.splice(Math.min(i,draftShared.length),0,removed);renderEditor()});
+  });buttons.append(del);top.append(buttons);box.append(top);
+  const fields=make('div','edit-fields one');fields.append(inputControl(group,i,item,'text','매 샷 체크할 내용','text',null,{maxlength:120,placeholder:'예: 목표 방향을 확인했는지'}));
+  box.append(fields);panel.append(box);
+ });
+ root.append(panel);
+}
+function validateDraft(draft){
+ if(!draft||draft.every(g=>g.items.length===0))return '최소 1개 연습 항목이 필요합니다.';
+ if(sumPlan(draft)>PLAN_BALL_LIMIT)return `루틴 전체 공 개수는 최대 ${PLAN_BALL_LIMIT.toLocaleString('ko-KR')}구까지 설정할 수 있습니다.`;
+ for(const s of draft){for(const item of s.items){
+  const n=Number(item.balls);if(!Number.isInteger(n)||n<1||n>1000)return '모든 항목의 공 개수는 1~1,000 사이의 정수로 입력하세요.';
+  if(s.key==='wedge'){
+   if(!finiteNumber(item.loft)||Number(item.loft)<0||Number(item.loft)>80)return '웨지 로프트는 0~80°로 입력하세요.';
+   if(!finiteNumber(item.distance)||Number(item.distance)<0||Number(item.distance)>300)return '웨지 목표 거리는 0~300m로 입력하세요.';
+  }else if(s.key==='iron'){
+   if(!IRONS.includes(item.club)||!GOALS.includes(item.goal))return '아이언 클럽과 집중 목표를 선택하세요.';
+  }else if(s.key==='long'){
+   if(!['utility','wood','driver'].includes(item.clubType))return '유틸리티/우드/드라이버 종류를 선택하세요.';
+   if(item.number!==''&&(!/^\d+$/.test(String(item.number))||Number(item.number)<1||Number(item.number)>15))return '클럽 번호는 1~15 사이로 입력하거나 비워 두세요.';
+   if(item.loft!==''&&(!finiteNumber(item.loft)||Number(item.loft)<0||Number(item.loft)>60))return '로프트는 0~60°로 입력하거나 비워 두세요.';
+   if(!String(item.focus).trim()||String(item.focus).length>30)return '집중 포인트는 1~30자로 입력하세요.';
+  }else if(!String(item.focus).trim()||String(item.focus).length>100)return '실전 연습 내용은 1~100자로 입력하세요.';
+ }}return '';
+}
+function sanitizeDraft(draft){return normalizedPlan(draft,builtInPlan)}
+function saveEditedRoutine(){
+ const message=validateDraft(draftPlan);if(message){showEditorFeedback(message);return}
+ if(draftShared.length>60||draftShared.some(item=>!String(item.text||'').trim()||item.text.length>120)){showEditorFeedback('매 샷 공통 체크는 1~120자로 작성하세요.');return}
+ const sanitized=sanitizeDraft(draftPlan);
+ if(editorMode==='base'){
+  const prev=basePlan,prevShared=baseShared;basePlan=sanitized;baseShared=normalizedShared(draftShared);
+  if(!saveBase()){basePlan=prev;baseShared=prevShared;return}
+  toast('기본 루틴을 저장했습니다. 오늘 계획은 그대로 유지됩니다.');
+ }else{
+  current.plan=sanitized;current.shared=normalizedShared(draftShared);
+  const validIds=new Set([...current.plan.flatMap(g=>g.items.map(it=>it.id)),...current.shared.map(it=>it.id),...putting.map(it=>it[0])]);
+  Object.keys(current.checks).forEach(id=>{if(!validIds.has(id))delete current.checks[id]});
+  persist();syncForm();clearSuggestion();toast('오늘의 연습 계획과 매 샷 공통 체크를 저장했습니다. 기존 체크 상태는 유지됩니다.');
+ }
+ updateProgress();closeEditor();
+}
+async function applyDefaultPlan(){
+ if(!(await askConfirm('나의 기본 루틴을 오늘 계획에 적용할까요?\n기존 오늘 체크 상태는 초기화됩니다. (날짜별 저장 기록은 유지)',{title:'기본 루틴 적용',okText:'적용'})))return;
+ current.plan=clone(basePlan);current.shared=clone(baseShared);current.checks={};persist();syncForm();clearSuggestion();toast('기본 루틴과 매 샷 공통 체크를 오늘 계획에 적용했습니다. 진행률은 0%입니다.');
+}
+async function restoreInitialRoutine(){
+ if(editorMode!=='base')return;
+ if(!(await askConfirm('기본 루틴 편집 내용을 최초 100구 예시로 되돌릴까요?\n저장하려면 아래 「수정 내용 저장」을 눌러야 합니다.',{title:'최초 예시로 복원',okText:'되돌리기'})))return;
+ draftPlan=clone(builtInPlan);draftShared=clone(builtInShared);renderEditor();showEditorFeedback('기본 루틴과 매 샷 공통 체크를 최초 예시로 되돌렸습니다. 저장해야 적용됩니다.');
+}
+$('editBase').addEventListener('click',()=>openEditor('base'));
+$('editToday').addEventListener('click',()=>openEditor('today'));
+$('saveRoutine').addEventListener('click',saveEditedRoutine);
+$('cancelRoutine').addEventListener('click',closeEditor);
+$('applyBase').addEventListener('click',applyDefaultPlan);
+$('restoreExample').addEventListener('click',restoreInitialRoutine);
+$('editSharedQuick').addEventListener('click',()=>{openEditor('today');$('sharedEditorGroup').scrollIntoView({behavior:'smooth',block:'start'});});
+
+// 시간 추천: 준비시간 5분 제외, 항목별 기본 공 비율 + 선택 분야의 40% 가중치
+let suggestion=null;
+function restorePlannerPreferences(){
+ $('practiceMinutes').value=Number.isFinite(Number(preferences.minutes))?preferences.minutes:60;
+ $('shotPace').value=['30','45','60','90'].includes(String(preferences.pace))?String(preferences.pace):'45';
+ $('focusArea').value=['none','wedge','iron','long','sim'].includes(preferences.focus)?preferences.focus:'none';
+}
+function allocateBalls(target,plan,focus){
+ const cloned=clone(plan);
+ const rows=cloned.flatMap(s=>s.items.map(i=>({section:s.key,item:i,weight:countBall(i)*(s.key===focus?1.4:1)})));
+ const sum=rows.reduce((n,r)=>n+r.weight,0);
+ if(!rows.length||sum===0)return null;
+ let allocated=0;
+ rows.forEach(r=>{const raw=target*r.weight/sum;r.item.balls=Math.floor(raw);r.remainder=raw-r.item.balls;allocated+=r.item.balls});
+ rows.sort((a,b)=>b.remainder-a.remainder);
+ for(let index=0;index<target-allocated;index++)rows[index%rows.length].item.balls++;
+ return cloned;
+}
+function plannerError(message){const el=$('plannerError');el.textContent=message||'';el.hidden=!message;if(message)toast(message)}
+function recommend(){
+ plannerError('');
+ const minutes=Number($('practiceMinutes').value),pace=Number($('shotPace').value),focus=$('focusArea').value;
+ if(!Number.isFinite(minutes)||!Number.isInteger(minutes)||minutes<10||minutes>300){plannerError('연습 시간은 10~300분 사이로 입력하세요.');return}
+ if(![30,45,60,90].includes(pace)){plannerError('연습 속도를 선택하세요.');return}
+ if(sumPlan(current.plan)<=0){plannerError('오늘 계획에 공이 없습니다. 먼저 연습 항목을 편집하세요.');return}
+ let target=Math.max(5,Math.round(((minutes-5)*60/pace)/5)*5);
+ // 과도한 배분을 막기 위해 시간/속도의 물리적 상한만 반영합니다.
+ const allocated=allocateBalls(target,current.plan,focus);
+ if(!allocated){plannerError('공 배분이 가능한 항목이 없습니다.');return}
+ suggestion={plan:allocated,sourceJSON:JSON.stringify(current.plan),minutes,pace,focus};
+ preferences={minutes,pace,focus};try{localStorage.setItem(PREF_KEY,JSON.stringify(preferences))}catch{}
+ $('allocationResult').hidden=false;$('suggestTotal').textContent=target;
+ $('suggestCaption').textContent=`${minutes}분 · ${pace}초/구${focus!=='none'?' · 집중 40% 가중':''}`;
+ const rows=$('suggestRows');rows.replaceChildren();
+ allocated.forEach(s=>{
+  const line=make('details','allocation-category');const total=sumGroup(s);line.classList.add('allocation-category');
+  const title=make('summary','allocation-row');title.append(make('span','',SECTIONS.find(x=>x.key===s.key).title),make('b','',total+'구'));
+  line.append(title);
+  const ul=make('ul');ul.style.cssText='list-style:none;padding:2px 0 10px 12px;margin:0;';
+  s.items.forEach(it=>{const li=make('li','allocation-row');li.append(make('span','',planLabel(s.key,it)),make('b','',it.balls+'구'));ul.append(li)});line.append(ul);rows.append(line);
+ });
+ const zero=allocated.flatMap(s=>s.items).filter(it=>it.balls===0).length;
+ if(zero){const itemCount=allocated.reduce((n,s)=>n+s.items.length,0),needMinutes=Math.min(300,Math.ceil(itemCount*pace/60)+5);
+  rows.append(make('p','allocation-warning',`연습 시간이 짧아 ${zero}개 항목은 0구로 배분됩니다. 해당 항목은 오늘 체크리스트에서 비활성화됩니다.`+(needMinutes>minutes?` 모든 항목에 공을 배분하려면 약 ${needMinutes}분 이상(현재 속도 기준)으로 설정하세요.`:'')));}
+ $('allocationResult').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+async function applySuggestion(){
+ if(!suggestion){toast('먼저 공 배분을 계산하세요.');return}
+ if(JSON.stringify(current.plan)!==suggestion.sourceJSON){toast('오늘 계획이 바뀌었습니다. 다시 계산하세요.');clearSuggestion();return}
+ const planned=suggestion;
+ if(!(await askConfirm(`추천된 ${sumPlan(planned.plan)}구로 오늘 연습을 시작할까요?\n현재 체크와 오늘 메모는 초기화됩니다. 저장된 과거 기록과 기본 루틴은 유지됩니다.`,{title:'추천 배분 적용',okText:'시작'})))return;
+ if(suggestion!==planned){toast('추천 결과가 바뀌었습니다. 다시 확인하세요.');return}
+ current={checks:{},plan:clone(suggestion.plan),shared:clone(current.shared),date:localDate(),best:'',worst:'',next:''};persist();syncForm();clearSuggestion();closeEditor();
+ $('done').scrollIntoView({behavior:'smooth',block:'center'});toast('추천 배분을 오늘의 연습 계획에 적용했습니다.');
+}
+$('recommendBalls').addEventListener('click',recommend);
+$('applySuggestion').addEventListener('click',applySuggestion);
+
+// 스윙 메모로 이동할 때 필요한 영역만 펼칩니다.
+document.querySelectorAll('.feel-jump').forEach(link=>link.addEventListener('click',()=>{const target=document.querySelector(link.getAttribute('href'));if(target)target.open=true}));
+// 초기화 및 자동 저장
+syncForm();renderHistory();showStorageStatus();restorePlannerPreferences();
+// v8: 웹 배포 시 오프라인 실행(서비스워커)과 저장소 보존 요청
+if(isWebOrigin&&'serviceWorker' in navigator&&(location.protocol==='https:'||/^(localhost|127\.0\.0\.1)$/.test(location.hostname))){
+ window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(err=>console.warn('service worker:',err))});
+}
+if(isWebOrigin&&navigator.storage&&typeof navigator.storage.persist==='function'){navigator.storage.persist().catch(()=>{})}
+document.addEventListener('change',event=>{
+ const target=event.target;
+ if(target.matches('[data-check-id]')){current.checks[target.dataset.checkId]=target.checked;persist();updateProgress()}
+});
+['date','best','worst','next'].forEach(key=>{$(key).addEventListener('input',()=>{current[key]=$(key).value;persist()})});
+function saveSessionRecord(scroll){
+ const date=$('date').value||localDate();current.date=date;
+ const existing=history.find(e=>e.date===date);const saved={...capture(),date,id:existing?.id||uid(),savedAt:new Date().toISOString()};
+ const nextHistory=existing?history.map(e=>e===existing?saved:e):[saved,...history];
+ try{localStorage.setItem(HISTORY_KEY,JSON.stringify(nextHistory));history=nextHistory}
+ catch{toast('저장이 제한됩니다. JSON 백업이나 기록 복사를 이용하세요.');return false}
+ persist();renderHistory();toast(existing?'해당 날짜의 기록을 수정해 저장했습니다.':'연습 기록을 저장했습니다.');
+ if(scroll)$('practiceDiary').scrollIntoView({behavior:'smooth',block:'start'});return true;
+}
+$('saveSession').addEventListener('click',()=>saveSessionRecord(true));
+$('saveAndBackup').addEventListener('click',()=>{if(saveSessionRecord(false))saveBackupToLocation()});
+$('copySummary').addEventListener('click',()=>copyText(summarize(capture())));
+$('exportCsv').addEventListener('click',exportCSV);
+$('exportBackup').addEventListener('click',exportJSON);
+$('saveDownload').addEventListener('click',exportJSON);
+$('saveLocation').addEventListener('click',saveBackupToLocation);
+$('restoreFromFile').addEventListener('click',()=>$('backupFile').click());
+$('importBackup').addEventListener('click',()=>$('backupFile').click());
+$('backupFile').addEventListener('change',async event=>{await importJSON(event.target.files?.[0]);event.target.value=''});
+// 새 연습 시작: 현재 계획·기본 루틴·작성 메모·날짜별 기록은 건드리지 않고 체크/진행률만 초기화
+$('reset').addEventListener('click',()=>{
+ current.checks={};
+ const saved=persist();
+ syncForm();clearSuggestion();
+ toast(saved?'전체 체크와 진행률을 0%로 초기화했습니다. 클럽·공 개수·집중 항목·공통 체크 문구는 유지됩니다.':'체크와 진행률은 초기화됐지만 자동 저장이 제한됩니다. JSON 백업을 이용하세요.');
+});
+
+  </script>
+</body>
+</html>
