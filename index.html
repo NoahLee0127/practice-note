@@ -1127,27 +1127,53 @@ $('editSharedQuick').addEventListener('click',()=>{openEditor('today');$('shared
 
 // 루틴 공유 링크: 서버 없이 주소 뒤(#share=...)에 「나의 기본 루틴」+「기본 공통 체크」만 담습니다.
 // 날짜별 기록·오늘 계획·체크·메모는 포함하지 않으며, 가져온 내용은 기본 루틴에만 반영합니다(정책 4·8).
-const SHARE_TYPE='golf-routine',SHARE_VERSION=1,SHARE_MAX_CHARS=60000;
-function encodeShareToken(){
- const bytes=new TextEncoder().encode(JSON.stringify({t:SHARE_TYPE,v:SHARE_VERSION,plan:basePlan,shared:baseShared}));
- let bin='';bytes.forEach(b=>{bin+=String.fromCharCode(b)});
- return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const SHARE_TYPE='golf-routine',SHARE_VERSION=1,SHARE_MAX_CHARS=60000,SHARE_MAX_BYTES=300000;
+// v2(짧은 링크): 항목 ID·키 이름을 빼고 배열로 줄인 뒤 브라우저 내장 deflate로 압축. 앞글자 Z=압축, C=비압축(압축 미지원 브라우저).
+// v1(앞글자 e: {"t":"golf-routine",...} base64)은 계속 읽을 수 있습니다. 항목·공통 체크 ID는 가져올 때 새로 매깁니다.
+const SHARE_ROW={wedge:['loft','distance'],iron:['club','goal'],long:['clubType','number','loft','focus'],sim:['focus']};
+const SHARE_ID={wedge:'w',iron:'i',long:'d',sim:'s'};
+const b64urlEncode=bytes=>{let bin='';bytes.forEach(b=>{bin+=String.fromCharCode(b)});return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+const b64urlDecode=text=>{let b64=text.replace(/-/g,'+').replace(/_/g,'/');while(b64.length%4)b64+='=';return Uint8Array.from(atob(b64),c=>c.charCodeAt(0))};
+async function pipeBytes(bytes,stream,max){
+ const writer=stream.writable.getWriter();writer.write(bytes).catch(()=>{});writer.close().catch(()=>{});
+ const reader=stream.readable.getReader(),parts=[];let size=0;
+ for(;;){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>max){reader.cancel().catch(()=>{});throw Error('size')}parts.push(value)}
+ const out=new Uint8Array(size);let offset=0;parts.forEach(part=>{out.set(part,offset);offset+=part.length});return out;
 }
-function shareLink(){return location.href.split('#')[0]+'#share='+encodeShareToken()}
+async function encodeShareToken(){
+ const compact=[SECTIONS.map(sec=>{const group=basePlan.find(s=>s.key===sec.key);return (group?group.items:[]).map(it=>[...SHARE_ROW[sec.key].map(k=>it[k]),it.balls])}),baseShared.map(x=>x.text)];
+ const bytes=new TextEncoder().encode(JSON.stringify(compact));
+ if(typeof CompressionStream==='function'){try{return 'Z'+b64urlEncode(await pipeBytes(bytes,new CompressionStream('deflate-raw'),SHARE_MAX_BYTES))}catch{}}
+ return 'C'+b64urlEncode(bytes);
+}
+async function shareLink(){return location.href.split('#')[0]+'#share='+await encodeShareToken()}
 // 링크 전체 또는 토큰만 붙여넣어도 읽습니다. 형식·한도 검증에 실패하면 예외를 던집니다.
-function parseShareInput(text){
+async function parseShareInput(text){
  const m=String(text||'').trim().match(/(?:[#&?]share=)?([A-Za-z0-9_-]{8,})\s*$/);
  if(!m||m[1].length>SHARE_MAX_CHARS)throw Error('format');
- let b64=m[1].replace(/-/g,'+').replace(/_/g,'/');while(b64.length%4)b64+='=';
- const bin=atob(b64),data=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(Uint8Array.from(bin,c=>c.charCodeAt(0))));
- if(!data||data.t!==SHARE_TYPE||data.v!==SHARE_VERSION||!Array.isArray(data.plan)||!Array.isArray(data.shared))throw Error('format');
- const plan=normalizedPlan(data.plan,null);
+ const token=m[1];let rawPlan,rawShared;
+ if(token[0]==='Z'||token[0]==='C'){
+  let bytes=b64urlDecode(token.slice(1));
+  if(token[0]==='Z'){if(typeof DecompressionStream!=='function')throw Error('unsupported');bytes=await pipeBytes(bytes,new DecompressionStream('deflate-raw'),SHARE_MAX_BYTES)}
+  const data=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+  if(!Array.isArray(data)||!Array.isArray(data[0])||!Array.isArray(data[1]))throw Error('format');
+  rawPlan=SECTIONS.map((sec,si)=>({key:sec.key,items:(Array.isArray(data[0][si])?data[0][si]:[]).map((row,i)=>{
+   if(!Array.isArray(row))throw Error('format');
+   const keys=SHARE_ROW[sec.key],item={id:SHARE_ID[sec.key]+(i+1)};keys.forEach((k,j)=>{item[k]=row[j]});item.balls=row[keys.length];return item;
+  })}));
+  rawShared=data[1].map((value,i)=>({id:'c'+(i+1),text:value}));
+ }else{
+  const data=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(b64urlDecode(token)));
+  if(!data||data.t!==SHARE_TYPE||data.v!==SHARE_VERSION||!Array.isArray(data.plan)||!Array.isArray(data.shared))throw Error('format');
+  rawPlan=data.plan;rawShared=data.shared;
+ }
+ const plan=normalizedPlan(rawPlan,null);
  if(!plan||validateDraft(plan))throw Error('plan');
- return {plan,shared:normalizedShared(data.shared,null)};
+ return {plan,shared:normalizedShared(rawShared,null)};
 }
 async function importShareInput(text){
  let incoming;
- try{incoming=parseShareInput(text)}catch{toast('공유 링크를 읽을 수 없습니다. 링크가 끝까지 복사됐는지 확인하세요.');return false}
+ try{incoming=await parseShareInput(text)}catch{toast('공유 링크를 읽을 수 없습니다. 링크가 끝까지 복사됐는지 확인하세요.');return false}
  const ok=await askConfirm(`${planSummary(incoming.plan)}\n총 ${sumPlan(incoming.plan).toLocaleString('ko-KR')}구 · 매 샷 공통 체크 ${incoming.shared.length}개\n\n현재 「나의 기본 루틴」을 이 내용으로 바꿀까요?\n오늘의 연습 계획·체크·메모·날짜별 기록은 바뀌지 않습니다.`,{title:'공유받은 루틴 가져오기',okText:'가져오기'});
  if(!ok)return false;
  const prev=basePlan,prevShared=baseShared;basePlan=incoming.plan;baseShared=incoming.shared;
@@ -1155,7 +1181,14 @@ async function importShareInput(text){
  updateProgress();toast('공유받은 루틴을 나의 기본 루틴으로 저장했습니다. 오늘 계획에 쓰려면 「기본 루틴을 오늘에 적용」을 누르세요.');
  return true;
 }
-$('shareRoutine').addEventListener('click',()=>copyText(shareLink(),'공유 링크'));
+// 압축은 비동기라 iOS Safari에서 클릭 직후가 아니면 복사가 막힐 수 있어, 가능하면 ClipboardItem에 Promise를 넘겨 복사합니다.
+$('shareRoutine').addEventListener('click',()=>{
+ const fallback=()=>shareLink().then(link=>copyText(link,'공유 링크'));
+ if(window.isSecureContext&&navigator.clipboard&&typeof ClipboardItem==='function'){
+  const blob=shareLink().then(link=>new Blob([link],{type:'text/plain'}));
+  navigator.clipboard.write([new ClipboardItem({'text/plain':blob})]).then(()=>toast('공유 링크를 복사했습니다.')).catch(fallback);
+ }else fallback();
+});
 $('toggleImportLink').addEventListener('click',()=>{const box=$('shareImport');box.hidden=!box.hidden;if(!box.hidden)$('shareImportInput').focus()});
 $('runImportLink').addEventListener('click',async()=>{const input=$('shareImportInput');if(await importShareInput(input.value)){input.value='';$('shareImport').hidden=true}});
 // 공유 링크로 열린 경우: 확인 후 주소의 #share 부분은 제거해 재방문 때 다시 묻지 않게 합니다.
