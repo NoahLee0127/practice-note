@@ -280,8 +280,22 @@ button{touch-action:manipulation}
 @media(max-width:390px){.routine-picker,.routine-library{padding:0 12px 14px}}
 .routine-picker[hidden]{display:none}
 .routine-picker .edit-hint{margin:0 0 8px;font-size:12px;line-height:1.55;color:#61766a}
-.rl-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.rl-top strong{font-size:14px}
+.rl-sum{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;font-weight:800;font-size:14px;-webkit-tap-highlight-color:transparent}
+.rl-sum::-webkit-details-marker{display:none}
+.rl-chevron{display:inline-block;font-size:18px;color:#668173;transition:transform .2s ease;padding:0 4px}
+.routine-library:not([open]) .rl-chevron{transform:rotate(-90deg)}
+.routine-library[open]>.rl-sum{margin-bottom:6px}
+.rl-body .rl-off{margin:0 0 2px}
+.rl-builtin{background:#f6faf7;border-color:#b9d6c3}
+/* 카드 접기/펼치기: 제목 줄을 누르면 내용이 접힘 */
+.card.collapsible>.section-head{cursor:pointer;position:relative;padding-right:48px;-webkit-tap-highlight-color:transparent;user-select:none}
+.card.collapsible>.section-head::after{content:"⌄";position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:20px;line-height:1;color:#668173;transition:transform .2s ease}
+.card.collapsible>.section-head:focus-visible{outline:3px solid #a5d1ad;outline-offset:-3px;border-radius:18px}
+.card.collapsible.collapsed>.section-head::after{transform:translateY(-50%) rotate(-90deg)}
+.card.collapsible.collapsed>*:not(.section-head){display:none}
+.card.collapsible.collapsed>.section-head .diary-subtitle{display:none}
+.card.collapsible.collapsed>.section-head{padding-bottom:16px}
+@media(max-width:380px){.card.collapsible>.section-head::after{right:12px}}
 .rl-count{color:var(--muted);font-weight:700;font-size:12px;margin-left:6px}
 .rl-off{display:flex;align-items:center;gap:6px;font-size:12px;color:#506557}
 .rl-card{border:1px solid #d9e5db;border-radius:12px;background:#fff;padding:11px 12px;margin-top:8px}
@@ -403,7 +417,7 @@ button{touch-action:manipulation}
         </details>
       </div>
     </section>
-    <section class="card routine-card" id="routinePanel" aria-labelledby="routineTitle">
+    <section class="card routine-card" id="routinePanel" data-collapsible aria-labelledby="routineTitle">
       <div class="section-head"><p class="feel-kicker">MY PRACTICE ROUTINE</p><h2 id="routineTitle">내 연습 루틴 · 오늘의 계획</h2><p class="diary-subtitle">클럽·공 개수·집중 목표와 매 샷 공통 체크를 편집할 수 있어요. 새 연습 시작은 체크와 진행률만 0%로 초기화합니다.</p></div>
       <div class="routine-quick">
         <div class="routine-stat"><span>나의 기본 루틴</span><strong id="baseCount">100구</strong></div>
@@ -428,12 +442,15 @@ button{touch-action:manipulation}
         <input type="text" id="shareImportInput" inputmode="url" autocomplete="off" placeholder="공유 링크 붙여넣기" aria-label="공유 링크">
         <button type="button" class="small-btn" id="runImportLink">가져오기</button>
       </div>
-      <div class="routine-library" id="routineLibrary">
-        <div class="rl-top"><strong>📋 내 루틴 목록<span class="rl-count" id="rlCount">0/10</span></strong><label class="rl-off"><input type="checkbox" id="rlPromptOff"> 기록 저장 후 저장 제안 끄기</label></div>
-        <div id="rlList"></div>
-        <div class="editor-feedback rl-feedback" id="rlFeedback" role="status" aria-live="polite" hidden><span id="rlFeedbackText"></span><button type="button" class="small-btn" id="rlUndo" hidden>↶ 삭제 취소</button></div>
-        <button type="button" class="small-btn rl-add" id="rlAddToday">＋ 오늘의 연습 계획을 목록에 저장</button>
-      </div>
+      <details class="routine-library" id="routineLibrary" open>
+        <summary class="rl-sum"><span class="rl-sum-title">📋 내 루틴 목록<span class="rl-count" id="rlCount">0/10</span></span><span class="rl-chevron" aria-hidden="true">⌄</span></summary>
+        <div class="rl-body">
+          <label class="rl-off"><input type="checkbox" id="rlPromptOff"> 기록 저장 후 저장 제안 끄기</label>
+          <div id="rlList"></div>
+          <div class="editor-feedback rl-feedback" id="rlFeedback" role="status" aria-live="polite" hidden><span id="rlFeedbackText"></span><button type="button" class="small-btn" id="rlUndo" hidden>↶ 삭제 취소</button></div>
+          <button type="button" class="small-btn rl-add" id="rlAddToday">＋ 오늘의 연습 계획을 목록에 저장</button>
+        </div>
+      </details>
       <div class="routine-editor" id="routineEditor" hidden>
         <div class="editor-topbar"><div class="editor-topbar-info"><strong id="editorTitle">연습 항목 편집</strong><span class="section-sub" id="editorBallTotal"></span></div><div class="editor-topbar-btns"><button type="button" class="small-btn" id="cancelRoutineTop">취소</button><button type="button" class="small-btn save" id="saveRoutineTop">✓ 저장</button></div></div>
         <p class="edit-hint" id="editorHint">항목 순서를 바꾸고 클럽·목표·공 개수를 편집하세요.</p>
@@ -443,7 +460,7 @@ button{touch-action:manipulation}
         <button type="button" class="feel-example-btn" id="restoreExample" hidden>기본 루틴을 최초 제작자 예시(100구)로 복원</button>
       </div>
     </section>
-    <section class="card planner-card" id="timePlanner" aria-labelledby="timePlannerTitle">
+    <section class="card planner-card" id="timePlanner" data-collapsible aria-labelledby="timePlannerTitle">
       <div class="section-head"><p class="feel-kicker">SMART ALLOCATION</p><h2 id="timePlannerTitle">연습 시간별 공 배분 제안</h2><p class="diary-subtitle">현재 <b>오늘의 계획</b>을 기준으로 배분합니다. 퍼팅은 연습 시간에서 제외합니다.</p></div>
       <div class="planner-content">
         <div class="planner-grid">
@@ -546,8 +563,8 @@ button{touch-action:manipulation}
       </div>
       <div class="history-list" id="historyList"></div>
     </section>
-    <section class="card storage-card" id="deviceStorage" aria-labelledby="storageTitle">
-      <div class="section-head"><h2 id="storageTitle">9. 기기 저장 / 백업 위치 선택</h2><p class="diary-subtitle">인터넷 없이 사용 · 기록은 기기에 저장 · 백업 파일 보관 위치는 직접 선택</p></div>
+    <section class="card storage-card" id="deviceStorage" data-collapsible aria-labelledby="storageTitle">
+      <div class="section-head"><p class="feel-kicker">DEVICE STORAGE &amp; BACKUP</p><h2 id="storageTitle">기기 저장 / 백업 위치 선택</h2><p class="diary-subtitle">인터넷 없이 사용 · 기록은 기기에 저장 · 백업 파일 보관 위치는 직접 선택</p></div>
       <div class="storage-status" id="storageStatus" role="status"><strong>기기 저장 확인 중</strong>브라우저 저장 지원 여부를 확인합니다.</div>
       <p class="backup-stamp" id="backupStamp">마지막 백업: 아직 없음</p>
       <div class="storage-actions">
@@ -1073,11 +1090,32 @@ async function importJSON(file){
 
 
 
+// 카드 접기/펼치기(보기 설정): 제목 줄을 누르면 접힘. 접힌 카드 id만 localStorage에 기억(백업 대상 아님).
+const COLLAPSE_KEY='golf_diary_ui_collapsed_v1';
+const cardSetters={};
+function expandCard(id){if(cardSetters[id])cardSetters[id](false)}
+function setupCollapsibleCards(){
+ let saved={};try{const v=JSON.parse(localStorage.getItem(COLLAPSE_KEY));if(v&&typeof v==='object'&&!Array.isArray(v))saved=v}catch{}
+ const persistState=()=>{try{Object.keys(saved).length?localStorage.setItem(COLLAPSE_KEY,JSON.stringify(saved)):localStorage.removeItem(COLLAPSE_KEY)}catch{}};
+ document.querySelectorAll('.card[data-collapsible]').forEach(card=>{
+  const head=card.querySelector(':scope>.section-head');if(!head||!card.id)return;
+  card.classList.add('collapsible');head.setAttribute('role','button');head.tabIndex=0;
+  const set=(collapsed,remember=true)=>{
+   card.classList.toggle('collapsed',collapsed);head.setAttribute('aria-expanded',String(!collapsed));
+   if(remember){if(collapsed)saved[card.id]=1;else delete saved[card.id];persistState()}
+  };
+  cardSetters[card.id]=set;set(saved[card.id]===1,false);
+  head.addEventListener('click',e=>{if(e.target.closest('button,a,input,select,textarea'))return;set(!card.classList.contains('collapsed'))});
+  head.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===head){e.preventDefault();set(!card.classList.contains('collapsed'))}});
+ });
+}
+
 // 루틴 편집: 기본 루틴과 오늘의 계획을 별도 관리
 let editorMode=null,draftPlan=null,draftShared=null,undoEdit=null,editorBaseline='';
 function closeEditor(){$('routineEditor').hidden=true;editorMode=null;draftPlan=null;draftShared=null;clearEditorFeedback()}
 function clearSuggestion(){$('allocationResult').hidden=true;suggestion=null;}
 function openEditor(mode){
+ expandCard('routinePanel');
  editorMode=mode;draftPlan=clone(mode==='base'?basePlan:current.plan);draftShared=clone(mode==='base'?baseShared:current.shared);editorBaseline=JSON.stringify([draftPlan,draftShared]);clearEditorFeedback();
  $('routineEditor').hidden=false;$('editorTitle').textContent=mode==='base'?'나의 기본 루틴 편집':'오늘의 연습 계획 편집';
  $('editorHint').textContent=mode==='base'?'클럽 연습과 매 샷 공통 체크까지 기본값으로 저장합니다. 오늘 계획은 유지됩니다.':'오늘 연습의 클럽·공 개수·집중 항목·매 샷 공통 체크를 편집합니다. 기본 루틴과 과거 기록은 유지됩니다.';
@@ -1251,7 +1289,10 @@ $('restoreExample').addEventListener('click',restoreInitialRoutine);
 const SEC_SHORT={wedge:'웨지',iron:'아이언',long:'장거리',sim:'실전'};
 const planBrief=plan=>plan.filter(g=>sumGroup(g)>0).map(g=>`${SEC_SHORT[g.key]} ${sumGroup(g)}`).join(' · ');
 const autoRoutineName=(date,plan)=>{const m=/^\d{4}-(\d{2})-(\d{2})$/.exec(date||'');return (m?`${Number(m[1])}/${Number(m[2])} · `:'')+sumPlan(plan)+'구'};
-const listHasSig=sig=>routineList.items.find(it=>routineSig(it.plan,it.shared)===sig);
+const BUILTIN_RLNAME='기본 100구 (아마추어 평균)';
+const builtinSig=()=>routineSig(builtInPlan,builtInShared);
+// 앱 기본 루틴(builtInPlan)은 목록 맨 위에 고정 표시(저장 공간·10개 한도에 포함되지 않음, 이름 변경·삭제 불가)
+const listHasSig=sig=>sig===builtinSig()?{name:'기본 100구',builtin:true}:routineList.items.find(it=>routineSig(it.plan,it.shared)===sig);
 function askRoutineName({title,message,defaultName='',okText='저장',cancelText='이번엔 안 함',items=null,offOption=false}){
  return new Promise(resolve=>{
   const prevFocus=document.activeElement;
@@ -1304,7 +1345,7 @@ async function offerSaveToList(plan,shared,{defaultName,intro='',lastUsed=''}={}
 }
 function touchRoutineUsed(plan,shared,date){
  const it=listHasSig(routineSig(plan,shared));
- if(!it||!/^\d{4}-\d{2}-\d{2}$/.test(date||'')||(it.lastUsed&&it.lastUsed>=date))return;
+ if(!it||it.builtin||!/^\d{4}-\d{2}-\d{2}$/.test(date||'')||(it.lastUsed&&it.lastUsed>=date))return;
  it.lastUsed=date;saveRoutineList();renderRoutineLibrary();
 }
 async function applyRoutineToToday(plan,shared,label){
@@ -1324,9 +1365,19 @@ function rlFeedback(message,undo=false){$('rlFeedbackText').textContent=message;
 function renderRoutineLibrary(){
  const root=$('rlList');if(!root)return;root.replaceChildren();
  $('rlCount').textContent=`${routineList.items.length}/${RLIST_MAX}`;$('rlPromptOff').checked=routineList.promptOff;
- if(!routineList.items.length){root.append(make('p','empty','저장된 루틴이 없습니다. 연습 기록을 저장한 뒤 안내가 나오면 저장하거나, 아래 버튼으로 오늘 계획을 저장하세요.'));return}
+ {const card=make('article','rl-card rl-builtin'),head=make('div','rl-head');
+  const title=make('strong','rl-name',BUILTIN_RLNAME);title.append(make('span','rl-badge','기본 제공'));
+  head.append(title,make('span','rl-total',sumPlan(builtInPlan)+'구'));
+  card.append(head,make('p','rl-sub',`${planBrief(builtInPlan)} · 앱 기본값 (목록 ${RLIST_MAX}개에 포함되지 않아요)`));
+  const row=make('div','rl-actions');
+  const bbtn=(label,fn)=>{const b=make('button','small-btn',label);b.type='button';b.addEventListener('click',fn);row.append(b)};
+  bbtn('오늘에 적용',()=>applyRoutineToToday(builtInPlan,builtInShared,'기본 100구'));
+  bbtn('기본 루틴으로',()=>setRoutineAsBase(builtInPlan,builtInShared,'기본 100구'));
+  bbtn('링크 복사',()=>copyShareLink(builtInPlan,builtInShared));
+  card.append(row);root.append(card)}
+ if(!routineList.items.length){root.append(make('p','empty','내가 저장한 루틴이 없습니다. 연습 기록을 저장한 뒤 안내가 나오면 저장하거나, 아래 버튼으로 오늘 계획을 저장하세요.'))}
  routineList.items.forEach(it=>{
-  const card=make('article','rl-card'),head=make('div','rl-head');
+  const card=make('article','rl-card rl-user'),head=make('div','rl-head');
   head.append(make('strong','rl-name',it.name),make('span','rl-total',sumPlan(it.plan)+'구'));
   card.append(head,make('p','rl-sub',`${planBrief(it.plan)} · ${it.lastUsed?'마지막 사용 '+it.lastUsed:'아직 기록에 쓰지 않음'}`));
   const row=make('div','rl-actions');
@@ -1347,6 +1398,9 @@ function renderRoutineLibrary(){
   card.append(row);root.append(card);
  });
 }
+{const det=$('routineLibrary'),KEY='golf_diary_rl_collapsed_v1';
+ try{if(localStorage.getItem(KEY)==='1')det.open=false}catch{}
+ det.addEventListener('toggle',()=>{try{det.open?localStorage.removeItem(KEY):localStorage.setItem(KEY,'1')}catch{}})}
 $('rlUndo').addEventListener('click',()=>{
  if(!lastRemovedRoutine)return;
  if(routineList.items.length>=RLIST_MAX){rlFeedback('목록이 가득 차서 복원할 수 없습니다. 다른 루틴을 먼저 삭제하세요.',true);return}
@@ -1524,7 +1578,7 @@ $('applySuggestion').addEventListener('click',applySuggestion);
 // 스윙 메모로 이동할 때 필요한 영역만 펼칩니다.
 document.querySelectorAll('.feel-jump').forEach(link=>link.addEventListener('click',()=>{const target=document.querySelector(link.getAttribute('href'));if(target)target.open=true}));
 // 초기화 및 자동 저장
-syncForm();renderHistory();renderRoutineLibrary();showStorageStatus();restorePlannerPreferences();handleShareHash();
+setupCollapsibleCards();syncForm();renderHistory();renderRoutineLibrary();showStorageStatus();restorePlannerPreferences();handleShareHash();
 // v8: 웹 배포 시 오프라인 실행(서비스워커)과 저장소 보존 요청
 if(isWebOrigin&&'serviceWorker' in navigator&&(location.protocol==='https:'||/^(localhost|127\.0\.0\.1)$/.test(location.hostname))){
  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(err=>console.warn('service worker:',err))});
