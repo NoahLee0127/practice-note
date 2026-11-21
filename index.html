@@ -548,7 +548,8 @@ const GOALS=['하프스윙','풀스윙','방향 집중','캐리 집중','방향�
 const IRONS=['PW','AW','SW','9','8','7','6','5','4','3','2'];
 const putting=[['p1','1m / 10개'],['p2','2m / 10개'],['p3','5~7m / 10개']];
 const builtInShared=[{id:'c1',text:'목표 거리와 방향 설정'},{id:'c2',text:'오른눈 어드레스와 가벼운 오른손 위크 그립'},{id:'c3',text:'천천히 업라이트 백스윙'},{id:'c4',text:'서두르지 않는 다운스윙'},{id:'c5',text:'확실한 임팩트'},{id:'c6',text:'캐리와 방향 확인'}];
-const builtInPlan=[
+// 이전 기본 루틴(v8.3.0까지). 계획 스냅샷이 없는 옛 날짜 기록·옛 체크를 해석하는 용도로만 사용 — 수정 금지(정책 8).
+const legacyPlan=[
  {key:'wedge',items:[
   {id:'w1',loft:56,distance:10,balls:5},{id:'w2',loft:56,distance:20,balls:5},{id:'w3',loft:56,distance:30,balls:5},{id:'w4',loft:56,distance:50,balls:5},
   {id:'w5',loft:50,distance:20,balls:5},{id:'w6',loft:50,distance:50,balls:5},{id:'w7',loft:50,distance:70,balls:5}]},
@@ -561,6 +562,24 @@ const builtInPlan=[
   {id:'d2',clubType:'driver',number:'',loft:'',focus:'그립과 백스윙',balls:5},
   {id:'d3',clubType:'driver',number:'',loft:'',focus:'다운스윙과 오른팔',balls:5},
   {id:'d4',clubType:'driver',number:'',loft:'',focus:'목표 방향과 탄도',balls:5}]},
+ {key:'sim',items:[{id:'s1',focus:'드라이버 / 세컨드 / 어프로치, 매 샷 클럽 교체',balls:5}]}
+];
+const builtInPlan=[
+ {key:'wedge',items:[
+  {id:'w1',loft:56,distance:20,balls:3,target:'몸풀기 · 느린 템포'},{id:'w2',loft:56,distance:30,balls:3,target:'몸풀기 · 컨택 확인'},
+  {id:'w3',loft:56,distance:40,balls:5,target:'캐리 ±2m'},{id:'w4',loft:56,distance:50,balls:5,target:'캐리 ±2m'},{id:'w5',loft:56,distance:60,balls:5,target:'캐리 ±3m (풀샷)'},
+  {id:'w6',loft:50,distance:50,balls:5,target:'캐리 ±2m'},{id:'w7',loft:50,distance:65,balls:5,target:'캐리 ±3m'},{id:'w8',loft:50,distance:80,balls:5,target:'캐리 ±3m (풀샷)'}]},
+ {key:'iron',items:[
+  {id:'i1',club:'PW',goal:'하프스윙',balls:5,target:'템포 일정 · 정타 느낌'},{id:'i2',club:'PW',goal:'목표거리',balls:5,target:'캐리 편차 ±4m 이내'},
+  {id:'i3',club:'9',goal:'정타 집중',balls:5,target:'정타 느낌 · 타구음 일정'},{id:'i4',club:'8',goal:'정타 집중',balls:5,target:'정타 느낌 · 타구음 일정'},
+  {id:'i5',club:'7',goal:'정타 집중',balls:5,target:'정타 8/10 이상'},{id:'i6',club:'6',goal:'방향과 캐리',balls:5,target:'좌우 편차 10m 이내'},
+  {id:'i7',club:'5',goal:'방향과 캐리',balls:5,target:'좌우 편차 12m 이내'}]},
+ {key:'long',items:[
+  {id:'d1',clubType:'utility',number:'4',loft:'22',focus:'정타와 방향',balls:5,target:'좌우 편차 15m 이내'},
+  {id:'d2',clubType:'wood',number:'5',loft:'18',focus:'정타와 방향',balls:5,target:'좌우 편차 15m 이내'},
+  {id:'d3',clubType:'driver',number:'',loft:'',focus:'템포와 컨택',balls:4,target:'천천히 · 정타 느낌'},
+  {id:'d4',clubType:'driver',number:'',loft:'',focus:'정타와 목표 방향',balls:5,target:'좌우 편차 20m 이내'},
+  {id:'d5',clubType:'driver',number:'',loft:'',focus:'탄도와 캐리',balls:5,target:'일정한 탄도 · 캐리 편차 ±10m'}]},
  {key:'sim',items:[{id:'s1',focus:'드라이버 / 세컨드 / 어프로치, 매 샷 클럽 교체',balls:5}]}
 ];
 const localDate=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10)};
@@ -634,7 +653,7 @@ function planLabel(sec,item){
  return item.focus;
 }
 function planSummary(plan){return plan.map(s=>`${SECTIONS.find(x=>x.key===s.key).title} ${sumGroup(s)}구`).join(' · ')}
-function entryPlan(entry){return normalizedPlan(entry?.plan,builtInPlan)}
+function entryPlan(entry){return normalizedPlan(entry?.plan,legacyPlan)}
 function entryTotal(entry){return entry&&Array.isArray(entry.plan)?sumPlan(entryPlan(entry)):100}
 function calculatedDone(checks,plan){return plan.reduce((n,s)=>n+s.items.reduce((v,it)=>v+(checks?.[it.id]?countBall(it):0),0),0)}
 function entryDone(e){return Number.isFinite(Number(e?.done))?Number(e.done):calculatedDone(e?.checks,entryPlan(e))}
@@ -644,7 +663,7 @@ let baseShared=normalizedShared(loadJSON(BASE_SHARED_KEY,null));
 let rawCurrent=loadJSON(CURRENT_KEY,{});
 if(!rawCurrent||typeof rawCurrent!=='object'||Array.isArray(rawCurrent))rawCurrent={};
 let current={checks:rawCurrent.checks&&typeof rawCurrent.checks==='object'&&!Array.isArray(rawCurrent.checks)?{...rawCurrent.checks}:{},
- plan:normalizedPlan(rawCurrent.plan,basePlan),shared:normalizedShared(rawCurrent.shared,baseShared),date:typeof rawCurrent.date==='string'?rawCurrent.date:localDate(),
+ plan:normalizedPlan(rawCurrent.plan,!Array.isArray(rawCurrent.plan)&&Object.keys(rawCurrent.checks||{}).length?legacyPlan:basePlan),shared:normalizedShared(rawCurrent.shared,baseShared),date:typeof rawCurrent.date==='string'?rawCurrent.date:localDate(),
  best:cleanString(rawCurrent.best,500),worst:cleanString(rawCurrent.worst,500),next:cleanString(rawCurrent.next,3000)};
 let history=loadJSON(HISTORY_KEY,[]);
 if(!Array.isArray(history))history=[];
