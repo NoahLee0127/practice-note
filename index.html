@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#10251d">
   <meta name="description" content="오프라인 골프 연습일기: 맞춤 구수 체크리스트, 매 샷 체크 편집, 날짜별 연습 기록">
   <title>⛳ Everyday Practice Note · 매일매일 연습일기</title>
@@ -23,7 +23,7 @@
     html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden}
     /* iOS Safari는 글자 크기 16px 미만 입력칸에 포커스하면 화면을 확대해 좌우로 흔들리게 함 → 입력칸은 16px 이상으로 */
     input,select,textarea{font-size:16px !important}
-    body{touch-action:pan-y pinch-zoom;overscroll-behavior-x:none}
+    body{touch-action:pan-y;overscroll-behavior-x:none}
     body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.45;-webkit-tap-highlight-color:transparent}
     button,input,textarea{font:inherit}
     button{cursor:pointer}
@@ -529,6 +529,8 @@ button{touch-action:manipulation}
 'use strict';
 // 매일매일 연습일기 v8 — 외부 라이브러리 없는 웹/오프라인 겸용 (GitHub Pages 배포판)
 const $=id=>document.getElementById(id);
+// 두 손가락 확대/축소 끔(iOS Safari는 viewport 설정을 무시하므로 gesture 이벤트도 막음). 입력칸 자동 확대는 CSS 16px로 방지.
+['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault()));
 const LAST_BACKUP_KEY='golf_diary_last_backup_v1';
 const NOTICE_KEY='golf_diary_notice_dismissed_v1';
 const PLAN_BALL_LIMIT=2000;

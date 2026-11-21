@@ -49,7 +49,8 @@
 
 ## 모바일 화면 안정성 (v8.2.1~)
 - iOS Safari는 글자 크기 16px 미만 입력칸(`input/select/textarea`)에 포커스하면 화면을 자동 확대해 좌우로 흔들림 → 입력칸은 항상 16px 이상 유지(CSS `!important`로 고정). 새 입력칸을 만들 때 이 규칙을 깨지 말 것.
-- `html{overflow-x:hidden}`, `body{touch-action:pan-y pinch-zoom}`로 가로 흔들림 방지. 확대(핀치 줌)는 접근성을 위해 허용(`maximum-scale` 사용 금지).
+- `html{overflow-x:hidden}`, `body{touch-action:pan-y}`로 가로 흔들림 방지.
+- **두 손가락 확대/축소는 끔(사용자 요청)**: viewport `maximum-scale=1, user-scalable=no` + iOS용 `gesturestart/change/end` 차단. 다시 켜려면 이 세 가지를 되돌릴 것.
 
 ## 작업 규칙
 - 수정 후 `node --check`로 스크립트 구문 검사, 모바일 폭(390px)에서 주요 흐름 확인.
