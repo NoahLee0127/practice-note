@@ -1,6 +1,6 @@
 // 매일매일 연습일기 서비스워커 — 오프라인 실행용 캐시
 // 배포 파일을 수정하면 CACHE_VERSION을 올려야 사용자 기기에 새 버전이 반영됩니다.
-const CACHE_VERSION = 'practice-note-v8.2.0';
+const CACHE_VERSION = 'practice-note-v8.2.1';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon.png'];
 
 self.addEventListener('install', event => {

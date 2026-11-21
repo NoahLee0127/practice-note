@@ -47,6 +47,10 @@
 - **주의**: 전역 `let history`는 연습 기록 배열이라 `window.history`를 가림. 주소 조작은 반드시 `window.history.replaceState`.
 - 링크는 가져온 시점의 스냅샷. 항목 ID가 같이 옮겨지므로 ID 체계(`w1`, `i1` …)와 체크 연결 방식 변경 시 호환 확인.
 
+## 모바일 화면 안정성 (v8.2.1~)
+- iOS Safari는 글자 크기 16px 미만 입력칸(`input/select/textarea`)에 포커스하면 화면을 자동 확대해 좌우로 흔들림 → 입력칸은 항상 16px 이상 유지(CSS `!important`로 고정). 새 입력칸을 만들 때 이 규칙을 깨지 말 것.
+- `html{overflow-x:hidden}`, `body{touch-action:pan-y pinch-zoom}`로 가로 흔들림 방지. 확대(핀치 줌)는 접근성을 위해 허용(`maximum-scale` 사용 금지).
+
 ## 작업 규칙
 - 수정 후 `node --check`로 스크립트 구문 검사, 모바일 폭(390px)에서 주요 흐름 확인.
 - 회귀 체크: 0구/0% 시작 → 체크 시 진행률 → 새 연습 시작 후 메모 유지 → 편집 추가·삭제·삭제 취소·저장 → 60분·45초 추천 75구 → 기록 저장 → JSON 백업/복원.
