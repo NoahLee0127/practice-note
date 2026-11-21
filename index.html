@@ -182,6 +182,12 @@
 .routine-stat strong{color:#265e42;font-size:18px}
 .routine-actions{padding:0 18px 18px;display:flex;flex-wrap:wrap;gap:8px}
 .routine-actions .small-btn{flex:1 1 130px;white-space:normal;min-height:40px}
+.routine-actions+.routine-actions{padding-top:0}
+.share-import{padding:0 18px 18px;display:grid;gap:8px}
+.share-import[hidden]{display:none}
+.share-import input{width:100%;min-height:42px;border:1px solid #d5dfd7;border-radius:9px;padding:9px 10px;font-size:14px;background:#fff;color:#263b2d}
+@media(max-width:390px){.share-import{padding:0 12px 14px}}
+@media print{.share-import{display:none}}
 .routine-editor{border-top:1px solid #e1eae3;padding:15px 18px 20px;background:#fcfefc}
 .editor-title{margin-bottom:10px}
 .editor-group{border:1px solid #e0e9e0;border-radius:13px;margin-top:13px;background:#fff;overflow:hidden}
@@ -368,6 +374,15 @@ button{touch-action:manipulation}
         <button type="button" class="small-btn" id="editBase">⚙ 기본 루틴 편집</button>
         <button type="button" class="small-btn" id="editToday">✎ 오늘 계획 편집</button>
         <button type="button" class="small-btn" id="applyBase">↺ 기본 루틴을 오늘에 적용</button>
+      </div>
+      <div class="routine-actions">
+        <button type="button" class="small-btn" id="shareRoutine">🔗 기본 루틴 공유 링크 복사</button>
+        <button type="button" class="small-btn" id="toggleImportLink">⬇ 공유 링크로 가져오기</button>
+      </div>
+      <div class="share-import" id="shareImport" hidden>
+        <p class="edit-hint">다른 기기(PC 등)에서 복사한 공유 링크를 붙여넣으세요. 홈 화면에 설치한 앱에서는 링크를 탭해도 앱이 아닌 브라우저로 열릴 수 있으니, 여기에 붙여넣는 방법이 가장 확실합니다. 가져온 내용은 「나의 기본 루틴」에만 반영됩니다.</p>
+        <input type="text" id="shareImportInput" inputmode="url" autocomplete="off" placeholder="공유 링크 붙여넣기" aria-label="공유 링크">
+        <button type="button" class="small-btn" id="runImportLink">가져오기</button>
       </div>
       <div class="routine-editor" id="routineEditor" hidden>
         <div class="between editor-title"><strong id="editorTitle">연습 항목 편집</strong><span class="section-sub" id="editorBallTotal"></span></div>
@@ -689,10 +704,10 @@ function summarize(entry){
  parts.push('\n가장 잘 맞은 클럽: '+(entry.best||'-'),'가장 불안했던 클럽: '+(entry.worst||'-'),'다음 연습 집중사항: '+(entry.next||'-'));
  return parts.join('\n');
 }
-async function copyText(value){
- try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);toast('기록을 복사했습니다.');return}
- const el=make('textarea');el.value=value;el.style.position='fixed';el.style.opacity='0';document.body.append(el);el.select();const ok=document.execCommand('copy');el.remove();if(ok){toast('기록을 복사했습니다.');return}throw Error('unsupported')}
- catch{toast('복사가 제한되어 별도 창으로 기록을 표시합니다.');const win=window.open('','_blank');if(win){const pre=make('pre','',value);pre.style.whiteSpace='pre-wrap';win.document.body.append(pre)}}
+async function copyText(value,label='기록'){
+ try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);toast(label+'을(를) 복사했습니다.');return}
+ const el=make('textarea');el.value=value;el.style.position='fixed';el.style.opacity='0';document.body.append(el);el.select();const ok=document.execCommand('copy');el.remove();if(ok){toast(label+'을(를) 복사했습니다.');return}throw Error('unsupported')}
+ catch{toast('복사가 제한되어 별도 창으로 '+label+'을(를) 표시합니다.');const win=window.open('','_blank');if(win){const pre=make('pre','',value);pre.style.whiteSpace='pre-wrap';win.document.body.append(pre)}}
 }
 function weekdayOf(isoDate){if(!/^\d{4}-\d{2}-\d{2}$/.test(isoDate||''))return '';const d=new Date(isoDate+'T12:00:00');return Number.isNaN(d.getTime())?'':['일','월','화','수','목','금','토'][d.getDay()]+'요일'}
 function renderHistory(){
@@ -1110,6 +1125,49 @@ $('applyBase').addEventListener('click',applyDefaultPlan);
 $('restoreExample').addEventListener('click',restoreInitialRoutine);
 $('editSharedQuick').addEventListener('click',()=>{openEditor('today');$('sharedEditorGroup').scrollIntoView({behavior:'smooth',block:'start'});});
 
+// 루틴 공유 링크: 서버 없이 주소 뒤(#share=...)에 「나의 기본 루틴」+「기본 공통 체크」만 담습니다.
+// 날짜별 기록·오늘 계획·체크·메모는 포함하지 않으며, 가져온 내용은 기본 루틴에만 반영합니다(정책 4·8).
+const SHARE_TYPE='golf-routine',SHARE_VERSION=1,SHARE_MAX_CHARS=60000;
+function encodeShareToken(){
+ const bytes=new TextEncoder().encode(JSON.stringify({t:SHARE_TYPE,v:SHARE_VERSION,plan:basePlan,shared:baseShared}));
+ let bin='';bytes.forEach(b=>{bin+=String.fromCharCode(b)});
+ return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function shareLink(){return location.href.split('#')[0]+'#share='+encodeShareToken()}
+// 링크 전체 또는 토큰만 붙여넣어도 읽습니다. 형식·한도 검증에 실패하면 예외를 던집니다.
+function parseShareInput(text){
+ const m=String(text||'').trim().match(/(?:[#&?]share=)?([A-Za-z0-9_-]{8,})\s*$/);
+ if(!m||m[1].length>SHARE_MAX_CHARS)throw Error('format');
+ let b64=m[1].replace(/-/g,'+').replace(/_/g,'/');while(b64.length%4)b64+='=';
+ const bin=atob(b64),data=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(Uint8Array.from(bin,c=>c.charCodeAt(0))));
+ if(!data||data.t!==SHARE_TYPE||data.v!==SHARE_VERSION||!Array.isArray(data.plan)||!Array.isArray(data.shared))throw Error('format');
+ const plan=normalizedPlan(data.plan,null);
+ if(!plan||validateDraft(plan))throw Error('plan');
+ return {plan,shared:normalizedShared(data.shared,null)};
+}
+async function importShareInput(text){
+ let incoming;
+ try{incoming=parseShareInput(text)}catch{toast('공유 링크를 읽을 수 없습니다. 링크가 끝까지 복사됐는지 확인하세요.');return false}
+ const ok=await askConfirm(`${planSummary(incoming.plan)}\n총 ${sumPlan(incoming.plan).toLocaleString('ko-KR')}구 · 매 샷 공통 체크 ${incoming.shared.length}개\n\n현재 「나의 기본 루틴」을 이 내용으로 바꿀까요?\n오늘의 연습 계획·체크·메모·날짜별 기록은 바뀌지 않습니다.`,{title:'공유받은 루틴 가져오기',okText:'가져오기'});
+ if(!ok)return false;
+ const prev=basePlan,prevShared=baseShared;basePlan=incoming.plan;baseShared=incoming.shared;
+ if(!saveBase()){basePlan=prev;baseShared=prevShared;return false}
+ updateProgress();toast('공유받은 루틴을 나의 기본 루틴으로 저장했습니다. 오늘 계획에 쓰려면 「기본 루틴을 오늘에 적용」을 누르세요.');
+ return true;
+}
+$('shareRoutine').addEventListener('click',()=>copyText(shareLink(),'공유 링크'));
+$('toggleImportLink').addEventListener('click',()=>{const box=$('shareImport');box.hidden=!box.hidden;if(!box.hidden)$('shareImportInput').focus()});
+$('runImportLink').addEventListener('click',async()=>{const input=$('shareImportInput');if(await importShareInput(input.value)){input.value='';$('shareImport').hidden=true}});
+// 공유 링크로 열린 경우: 확인 후 주소의 #share 부분은 제거해 재방문 때 다시 묻지 않게 합니다.
+async function handleShareHash(){
+ if(!/^#share=/.test(location.hash))return;
+ const hash=location.hash;
+ // 주의: 이 파일의 전역 `history`는 연습 기록 배열이므로 반드시 window.history를 씁니다.
+ try{window.history.replaceState(null,'',location.pathname+location.search)}catch{}
+ await importShareInput(hash);
+}
+window.addEventListener('hashchange',handleShareHash);
+
 // 시간 추천: 준비시간 5분 제외, 항목별 기본 공 비율 + 선택 분야의 40% 가중치
 let suggestion=null;
 function restorePlannerPreferences(){
@@ -1171,7 +1229,7 @@ $('applySuggestion').addEventListener('click',applySuggestion);
 // 스윙 메모로 이동할 때 필요한 영역만 펼칩니다.
 document.querySelectorAll('.feel-jump').forEach(link=>link.addEventListener('click',()=>{const target=document.querySelector(link.getAttribute('href'));if(target)target.open=true}));
 // 초기화 및 자동 저장
-syncForm();renderHistory();showStorageStatus();restorePlannerPreferences();
+syncForm();renderHistory();showStorageStatus();restorePlannerPreferences();handleShareHash();
 // v8: 웹 배포 시 오프라인 실행(서비스워커)과 저장소 보존 요청
 if(isWebOrigin&&'serviceWorker' in navigator&&(location.protocol==='https:'||/^(localhost|127\.0\.0\.1)$/.test(location.hostname))){
  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(err=>console.warn('service worker:',err))});
